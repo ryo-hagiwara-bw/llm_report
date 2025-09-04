@@ -250,7 +250,7 @@ async def main():
         # Initialize application
         app = IntegratedLLMApp()
         
-        prompt_driven_prompt = "万博開催後の万博会場で、エリア内居住者の平均滞在時間を分析して"
+        prompt_driven_prompt = "エリアごとのエリア内居住者とエリア外居住者の滞在時間の平均を調べて"
         print(f"Prompt: {prompt_driven_prompt}")
         print("Response: Prompt-driven workflow executing...")
         
