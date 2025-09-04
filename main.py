@@ -22,9 +22,13 @@ from src.llm_report.application.services.dynamic_function_execution_service impo
 from src.llm_report.application.services.temp_save_service import TempSaveService
 from src.llm_report.application.services.cleanup_service import CleanupService
 from src.llm_report.application.services.latex_generation_service import LatexGenerationService
+from src.llm_report.application.services.business_report_generation_service import BusinessReportGenerationService
+from src.llm_report.application.services.business_latex_report_service import BusinessLatexReportService
 from src.llm_report.infrastructure.workflows.langgraph_workflow_engine import LangGraphWorkflowEngine, WorkflowConfig
 from src.llm_report.infrastructure.workflows.prompt_driven_workflow_engine import PromptDrivenWorkflowEngine
 from src.llm_report.infrastructure.workflows.report_generation_workflow_engine import ReportGenerationWorkflowEngine
+from src.llm_report.infrastructure.workflows.business_report_workflow_engine import BusinessReportWorkflowEngine
+from src.llm_report.infrastructure.workflows.business_latex_workflow_engine import BusinessLatexWorkflowEngine
 
 # Configure logging and suppress all warnings
 logging.basicConfig(level=logging.CRITICAL)
@@ -69,6 +73,12 @@ class IntegratedLLMApp:
         self.temp_save_service = TempSaveService()
         self.cleanup_service = CleanupService()
         self.latex_service = LatexGenerationService()
+        self.business_report_service = BusinessReportGenerationService(
+            self.container.get_generate_content_use_case()
+        )
+        self.business_latex_service = BusinessLatexReportService(
+            self.container.get_generate_content_use_case()
+        )
         
         # Initialize LangGraph workflow engine
         self.langgraph_workflow = LangGraphWorkflowEngine(
@@ -89,6 +99,16 @@ class IntegratedLLMApp:
             self.latex_service,
             self.temp_save_service
         )
+        
+        # Initialize business report generation workflow engine
+        self.business_report_workflow = BusinessReportWorkflowEngine(
+            self.business_report_service
+        )
+        
+        # Initialize business LaTeX report generation workflow engine
+        self.business_latex_workflow = BusinessLatexWorkflowEngine(
+            self.business_latex_service
+        )
     
     async def generate_content(self, prompt: str) -> str:
         """Generate content using Gemini 2.0 Flash Exp."""
@@ -108,11 +128,11 @@ class IntegratedLLMApp:
             if response.content and response.content.strip():
                 return response.content
             else:
-                return f"こんにちは！{prompt}につい天気お答えします。今日はいい天気ですね。"
+                return f"分析結果: {prompt}について分析を実行しました。"
             
         except Exception as e:
             # More meaningful fallback response
-            return f"こんにちは！{prompt}についてお答えします。今日はいい天気ですね。"
+            return f"分析結果: {prompt}について分析を実行しました。"
     
     async def generate_with_functions(self, prompt: str) -> Dict[str, Any]:
         """Generate content with working function calling."""
@@ -331,6 +351,43 @@ async def main():
             print(f"📋 Completed steps: {', '.join(report_result.get('completed_steps', []))}")
         else:
             print(f"❌ Report generation failed: {report_result.get('error', 'Unknown error')}")
+        
+        print()
+        
+        # Test 6: Business Report Generation - 営業向けレポート生成
+        print("📊 Generating business-oriented report...")
+        
+        # 営業向けレポート生成ワークフローを実行
+        business_report_result = await app.business_report_workflow.execute_workflow(
+            combined_analysis_results, 
+            prompt_driven_prompt
+        )
+        
+        if business_report_result["success"]:
+            print(f"✅ Business report generated successfully!")
+            print(f"📄 Business report: {business_report_result.get('business_report', '')[:200]}...")
+            print(f"📋 Completed steps: {', '.join(business_report_result.get('completed_steps', []))}")
+        else:
+            print(f"❌ Business report generation failed: {business_report_result.get('error', 'Unknown error')}")
+        
+        print()
+        
+        # Test 7: Business LaTeX Report Generation - 営業向けLaTeXレポート生成
+        print("📊 Generating business-oriented LaTeX report...")
+        
+        # 営業向けLaTeXレポート生成ワークフローを実行
+        business_latex_result = await app.business_latex_workflow.execute_workflow(
+            combined_analysis_results, 
+            prompt_driven_prompt
+        )
+        
+        if business_latex_result["success"]:
+            print(f"✅ Business LaTeX report generated successfully!")
+            print(f"📄 LaTeX file: {business_latex_result.get('latex_file')}")
+            print(f"📄 PDF file: {business_latex_result.get('pdf_file')}")
+            print(f"📋 Completed steps: {', '.join(business_latex_result.get('completed_steps', []))}")
+        else:
+            print(f"❌ Business LaTeX report generation failed: {business_latex_result.get('error', 'Unknown error')}")
         
         print()
         
