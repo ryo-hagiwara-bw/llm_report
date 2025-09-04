@@ -1,4 +1,4 @@
-"""Final fixed main application with working function calling."""
+"""Main application with LangGraph and prompt-driven workflow engines."""
 
 import asyncio
 import logging
@@ -16,7 +16,11 @@ from src.llm_report.application.use_cases.data_analysis_use_case import DataAnal
 from src.llm_report.application.services.data_loader_service import DataLoaderService
 from src.llm_report.application.services.data_analysis_service import DataAnalysisService
 from src.llm_report.application.services.advanced_data_analysis_service import AdvancedDataAnalysisService
-from src.llm_report.infrastructure.workflows.clean_workflow_engine import CleanWorkflowEngine
+from src.llm_report.application.services.data_overview_service import DataOverviewService
+from src.llm_report.application.services.llm_function_selection_service import LLMFunctionSelectionService
+from src.llm_report.application.services.dynamic_function_execution_service import DynamicFunctionExecutionService
+from src.llm_report.infrastructure.workflows.langgraph_workflow_engine import LangGraphWorkflowEngine, WorkflowConfig
+from src.llm_report.infrastructure.workflows.prompt_driven_workflow_engine import PromptDrivenWorkflowEngine
 
 # Configure logging and suppress all warnings
 logging.basicConfig(level=logging.CRITICAL)
@@ -37,8 +41,8 @@ os.makedirs("output", exist_ok=True)
 logger = logging.getLogger(__name__)
 
 
-class FixedFinalLLMApp:
-    """Final fixed LLM application with working function calling."""
+class IntegratedLLMApp:
+    """Integrated LLM application with LangGraph and prompt-driven workflows."""
     
     def __init__(self):
         # Initialize DDD components
@@ -50,15 +54,31 @@ class FixedFinalLLMApp:
         self.advanced_analyzer = AdvancedDataAnalysisService()
         self.data_analysis_use_case = DataAnalysisUseCase(self.data_loader, self.data_analyzer)
         
-        # Initialize workflow engine
-        self.workflow_engine = CleanWorkflowEngine(
-            self.data_analyzer,
-            self.data_loader,
+        # Initialize new services
+        self.data_overview_service = DataOverviewService()
+        self.llm_function_selection_service = LLMFunctionSelectionService(
             self.container.get_llm_repository()
+        )
+        self.dynamic_function_execution_service = DynamicFunctionExecutionService(
+            self.advanced_analyzer
+        )
+        
+        # Initialize LangGraph workflow engine
+        self.langgraph_workflow = LangGraphWorkflowEngine(
+            self.data_loader,
+            self.advanced_analyzer
+        )
+        
+        # Initialize prompt-driven workflow engine
+        self.prompt_driven_workflow = PromptDrivenWorkflowEngine(
+            self.data_loader,
+            self.data_overview_service,
+            self.llm_function_selection_service,
+            self.dynamic_function_execution_service
         )
     
     async def generate_content(self, prompt: str) -> str:
-        """Generate content using Gemini 2.5 Pro."""
+        """Generate content using Gemini 2.0 Flash Exp."""
         try:
             # Create prompt object properly
             prompt_obj = Prompt(content=prompt)
@@ -125,59 +145,96 @@ class FixedFinalLLMApp:
                 "error": None
             }
     
-    async def execute_data_analysis_workflow(
+    async def execute_langgraph_workflow(
         self, 
         file_path: str,
-        target_column: str = "visitor_count",
-        chart_type: str = "bar_chart",
-        x_column: str = "area",
-        y_column: str = "visitor_count"
+        target_metrics: list = None,
+        key_dimensions: list = None,
+        analysis_types: list = None,
+        filters: Dict[str, Any] = None,
+        report_type: str = "full",
+        export_format: str = "excel"
     ) -> Dict[str, Any]:
-        """Execute data analysis workflow using clean engine."""
+        """Execute LangGraph workflow for data analysis."""
         try:
-            result = await self.workflow_engine.execute_data_analysis_workflow(
+            # Set default values
+            if target_metrics is None:
+                target_metrics = ["visitor_count", "average_daily_visiting_seconds", "average_visit_count"]
+            if key_dimensions is None:
+                key_dimensions = ["area", "period", "gender", "age", "day_type"]
+            if analysis_types is None:
+                analysis_types = ["summary", "comparison", "distribution"]
+            
+            # Create workflow configuration
+            config = WorkflowConfig(
                 file_path=file_path,
-                target_column=target_column,
-                chart_type=chart_type,
-                x_column=x_column,
-                y_column=y_column
+                target_metrics=target_metrics,
+                key_dimensions=key_dimensions,
+                analysis_types=analysis_types,
+                filters=filters,
+                report_type=report_type,
+                export_format=export_format
             )
             
-            return {
-                "success": result.success,
-                "execution_time": result.execution_time,
-                "completed_steps": result.completed_steps,
-                "failed_steps": result.failed_steps,
-                "results": result.results,
-                "errors": result.errors
-            }
+            # Execute the workflow
+            result = await self.langgraph_workflow.execute_workflow(config)
+            
+            return result
             
         except Exception as e:
             return {
                 "success": False,
                 "error": str(e),
-                "execution_time": 0.0,
+                "data": None,
+                "analysis_results": {},
+                "insights": [],
+                "file_paths": [],
                 "completed_steps": [],
-                "failed_steps": [],
-                "results": {},
-                "errors": [str(e)]
+                "failed_steps": []
+            }
+    
+    async def execute_prompt_driven_workflow(
+        self, 
+        user_prompt: str,
+        file_path: str = "dataset/result_15_osakabanpaku_stay.csv"
+    ) -> Dict[str, Any]:
+        """Execute prompt-driven workflow for automatic data analysis."""
+        try:
+            # Execute the workflow
+            result = await self.prompt_driven_workflow.execute_workflow(user_prompt, file_path)
+            
+            return result
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "user_prompt": user_prompt,
+                "data": None,
+                "data_overview": None,
+                "function_selection": None,
+                "execution_result": None,
+                "insights": [],
+                "file_paths": [],
+                "completed_steps": [],
+                "failed_steps": []
             }
 
 
 async def main():
-    """Main function for testing final fixed application."""
+    """Main function for testing integrated application."""
     try:
         # Initialize application
-        app = FixedFinalLLMApp()
+        app = IntegratedLLMApp()
         
-        # Test 1: Basic content generation with Gemini 2.5 Pro
+        # Test 1: Basic content generation
         basic_prompt = "こんにちは！今日はいい天気ですね。"
         basic_response = await app.generate_content(basic_prompt)
         print(f"Prompt: {basic_prompt}")
         print(f"Response: {basic_response}")
         print()
         
-        # Test 2: Function calling with working implementation
+        # Test 2: Function calling
         function_prompt = "東京の天気を教えて"
         function_result = await app.generate_with_functions(function_prompt)
         print(f"Prompt: {function_prompt}")
@@ -188,121 +245,64 @@ async def main():
                 print(f"- {result['name']}: {result['result']}")
         print()
         
-        # Test 3: Advanced Data Analysis
-        advanced_prompt = "万博開催後の万博会場で、エリア内居住者の平均滞在時間を分析して"
-        print(f"Prompt: {advanced_prompt}")
-        print("Response: Advanced analysis executing...")
+        # Test 3: LangGraph Workflow - 手動設定
+        langgraph_prompt = "LangGraphで包括的なデータ分析を実行して"
+        print(f"Prompt: {langgraph_prompt}")
+        print("Response: LangGraph workflow executing...")
         
-        # Advanced analysis example
-        advanced_result = app.advanced_analyzer.analyze_by_dimensions(
-            data=app.data_loader.load_csv_data("dataset/result_15_osakabanpaku_stay.csv"),
-            target_metric="average_daily_visiting_seconds",
-            group_by=["period", "area", "home_area"],
-            filters={"period": "万博開催後", "area": "万博会場", "home_area": "エリア内"}
-        )
-        
-        if advanced_result:
-            print(f"✅ Advanced analysis completed!")
-            print(f"📊 Target metric: {advanced_result.target_metric}")
-            print(f"📋 Group by: {', '.join(advanced_result.group_by)}")
-            print(f"📈 Analysis type: {advanced_result.analysis_type}")
-            print(f"💡 Insights: {len(advanced_result.insights)} insights generated")
-            
-            if advanced_result.results:
-                for result in advanced_result.results[:3]:  # Show first 3 results
-                    print(f"   - {result.dimension}: {result.values[0]} - Mean: {result.statistics.get('mean', 0):.2f}")
-        
-        print()
-        
-        # Test 4: Comprehensive Report
-        comprehensive_prompt = "包括的なデータ分析レポートを作成して"
-        print(f"Prompt: {comprehensive_prompt}")
-        print("Response: Comprehensive report generation...")
-        
-        comprehensive_report = app.advanced_analyzer.create_comprehensive_report(
-            data=app.data_loader.load_csv_data("dataset/result_15_osakabanpaku_stay.csv"),
-            target_metrics=["visitor_count", "average_daily_visiting_seconds", "average_visit_count"],
-            key_dimensions=["area", "period", "gender", "age", "day_type"]
-        )
-        
-        if comprehensive_report:
-            print(f"✅ Comprehensive report completed!")
-            print(f"📊 Report ID: {comprehensive_report.report_id}")
-            print(f"📈 Analysis results: {len(comprehensive_report.analysis_results)}")
-            print(f"⏱️  Temporal analysis: {len(comprehensive_report.temporal_analysis)}")
-            print(f"💡 Overall insights: {len(comprehensive_report.overall_insights)}")
-            print(f"📁 Generated files: {len(comprehensive_report.file_paths)}")
-            
-            # Show some insights
-            for i, insight in enumerate(comprehensive_report.overall_insights[:3], 1):
-                print(f"   {i}. {insight}")
-        
-        print()
-        
-        # Test 5: Data Analysis Workflow (Original)
-        workflow_prompt = "dataset/result_15_osakabanpaku_stay.csvの包括的なデータ分析を実行して"
-        print(f"Prompt: {workflow_prompt}")
-        print("Response: Clean workflow engine executing...")
-        
-        workflow_result = await app.execute_data_analysis_workflow(
+        langgraph_result = await app.execute_langgraph_workflow(
             file_path="dataset/result_15_osakabanpaku_stay.csv",
-            target_column="visitor_count",
-            chart_type="bar_chart",
-            x_column="area",
-            y_column="visitor_count"
+            target_metrics=["visitor_count", "average_daily_visiting_seconds"],
+            key_dimensions=["area", "period", "gender"],
+            analysis_types=["summary", "comparison"],
+            filters={"period": "万博開催後", "area": "万博会場"},
+            report_type="full",
+            export_format="excel"
         )
         
-        if workflow_result["success"]:
-            print(f"✅ Workflow completed successfully!")
-            print(f"⏱️  Execution time: {workflow_result['execution_time']:.2f} seconds")
-            print(f"📋 Completed steps: {', '.join(workflow_result['completed_steps'])}")
-            
-            if workflow_result["failed_steps"]:
-                print(f"⚠️  Failed steps: {', '.join(workflow_result['failed_steps'])}")
-            
-            if workflow_result["errors"]:
-                print(f"⚠️  Warnings: {len(workflow_result['errors'])} issues encountered")
-                for error in workflow_result["errors"]:
-                    print(f"   - {error}")
-            
-            # Show results summary
-            results = workflow_result.get("results", {})
-            
-            if "data_info" in results:
-                data_info = results["data_info"]
-                print(f"\n📊 Data Information:")
-                print(f"   - Shape: {data_info['shape']}")
-                print(f"   - Columns: {len(data_info['columns'])}")
-            
-            if "statistics" in results:
-                stats = results["statistics"]
-                print(f"\n📈 Statistics Summary:")
-                print(f"   - Count: {stats.get('count', 'N/A')}")
-                print(f"   - Mean: {stats.get('mean', 'N/A'):.2f}")
-                print(f"   - Std: {stats.get('std', 'N/A'):.2f}")
-                print(f"   - Min: {stats.get('min', 'N/A'):.2f}")
-                print(f"   - Max: {stats.get('max', 'N/A'):.2f}")
-            
-            if "correlation" in results:
-                corr = results["correlation"]
-                print(f"\n🔗 Correlation Analysis:")
-                print(f"   - Matrix calculated for {len(corr.get('correlation_matrix', {}))} variables")
-                print(f"   - Significant correlations: {len(corr.get('significant_correlations', []))}")
-            
-            if "visualization" in results:
-                viz = results["visualization"]
-                print(f"\n📈 Visualization:")
-                print(f"   - Chart type: {viz.get('chart_type', 'N/A')}")
-                print(f"   - File saved: {viz.get('file_path', 'N/A')}")
-            
-            if "report" in results:
-                print(f"\n📝 Generated Report:")
-                print(f"   {results['report']}")
+        if langgraph_result["success"]:
+            print(f"✅ LangGraph workflow completed successfully!")
+            print(f"📊 Data shape: {langgraph_result['data'].shape if langgraph_result['data'] is not None else 'N/A'}")
+            print(f"📋 Completed steps: {', '.join(langgraph_result['completed_steps'])}")
+            print(f"💡 Insights: {len(langgraph_result['insights'])} insights generated")
+            print(f"📁 Generated files: {len(langgraph_result['file_paths'])} files")
         else:
-            print(f"❌ Workflow failed: {workflow_result.get('error', 'Unknown error')}")
-            if workflow_result.get("errors"):
-                for error in workflow_result["errors"]:
-                    print(f"   - {error}")
+            print(f"❌ LangGraph workflow failed: {langgraph_result.get('error', 'Unknown error')}")
+        print()
+        
+        # Test 4: Prompt-driven Workflow - 自動分析
+        prompt_driven_prompt = "万博開催後の万博会場で、エリア内居住者の平均滞在時間を分析して"
+        print(f"Prompt: {prompt_driven_prompt}")
+        print("Response: Prompt-driven workflow executing...")
+        
+        prompt_driven_result = await app.execute_prompt_driven_workflow(prompt_driven_prompt)
+        
+        if prompt_driven_result["success"]:
+            print(f"✅ Prompt-driven workflow completed successfully!")
+            print(f"📊 Data shape: {prompt_driven_result['data'].shape if prompt_driven_result['data'] is not None else 'N/A'}")
+            print(f"📋 Completed steps: {', '.join(prompt_driven_result['completed_steps'])}")
+            print(f"💡 Insights: {len(prompt_driven_result['insights'])} insights generated")
+            print(f"📁 Generated files: {len(prompt_driven_result['file_paths'])} files")
+            
+            # Show function selection details
+            if prompt_driven_result.get("function_selection"):
+                fs = prompt_driven_result["function_selection"]
+                print(f"\n🤖 LLM Function Selection:")
+                print(f"   - Selected function: {fs.function_name}")
+                print(f"   - Confidence: {fs.confidence:.2f}")
+                print(f"   - Reasoning: {fs.reasoning}")
+                print(f"   - Parameters: {fs.parameters}")
+            
+            # Show execution result
+            if prompt_driven_result.get("execution_result"):
+                er = prompt_driven_result["execution_result"]
+                print(f"\n⚡ Execution Result:")
+                print(f"   - Success: {er.success}")
+                print(f"   - Execution time: {er.execution_time:.2f}s" if er.execution_time else "   - Execution time: N/A")
+                if er.error:
+                    print(f"   - Error: {er.error}")
+        else:
+            print(f"❌ Prompt-driven workflow failed: {prompt_driven_result.get('error', 'Unknown error')}")
         
         print()
         
