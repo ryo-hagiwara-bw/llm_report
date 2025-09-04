@@ -52,13 +52,15 @@ class FunctionCallingResponse:
 class FunctionCallingUseCase:
     """Use case for handling function calling with LLM."""
     
-    def __init__(self, llm_repository):
+    def __init__(self, llm_repository, data_analysis_use_case=None):
         """Initialize the use case.
         
         Args:
             llm_repository: Repository for LLM operations
+            data_analysis_use_case: Data analysis use case (optional)
         """
         self.llm_repository = llm_repository
+        self.data_analysis_use_case = data_analysis_use_case
         self.function_handlers = {}
         self._register_default_functions()
     
@@ -67,7 +69,11 @@ class FunctionCallingUseCase:
         self.function_handlers = {
             "get_weather": self._weather_handler,
             "calculate": self._calculator_handler,
-            "get_time": self._time_handler
+            "get_time": self._time_handler,
+            "analyze_data_basic_statistics": self._analyze_data_basic_statistics_handler,
+            "analyze_data_cross_tabulation": self._analyze_data_cross_tabulation_handler,
+            "analyze_data_correlation": self._analyze_data_correlation_handler,
+            "create_data_visualization": self._create_data_visualization_handler
         }
     
     async def execute(self, request: FunctionCallingRequest) -> FunctionCallingResponse:
@@ -292,3 +298,186 @@ class FunctionCallingUseCase:
         from datetime import datetime
         current_time = datetime.now()
         return f"{timezone}の現在時刻: {current_time.strftime('%Y-%m-%d %H:%M:%S')}"
+    
+    # Data analysis function handlers
+    async def _analyze_data_basic_statistics_handler(self, args: Dict[str, Any]) -> str:
+        """Handle basic statistics analysis function calls."""
+        if not self.data_analysis_use_case:
+            return "データ分析機能が利用できません"
+        
+        try:
+            from src.llm_report.domain.entities.data_analysis_request import DataAnalysisRequest, AnalysisType
+            
+            file_path = args.get("file_path")
+            target_column = args.get("target_column")
+            
+            if not file_path or not target_column:
+                return "file_pathとtarget_columnが必要です"
+            
+            request = DataAnalysisRequest(
+                file_path=file_path,
+                analysis_type=AnalysisType.BASIC_STATISTICS,
+                target_columns=[target_column]
+            )
+            
+            response = await self.data_analysis_use_case.execute(request)
+            
+            if response.success and response.result:
+                stats = response.result
+                return f"""基本統計量 ({target_column}):
+- データ数: {stats.count}
+- 平均値: {stats.mean:.2f}
+- 標準偏差: {stats.std:.2f}
+- 最小値: {stats.min:.2f}
+- 最大値: {stats.max:.2f}
+- 中央値: {stats.median:.2f}
+- 第1四分位数: {stats.q25:.2f}
+- 第3四分位数: {stats.q75:.2f}"""
+            else:
+                return f"分析に失敗しました: {response.error}"
+                
+        except Exception as e:
+            return f"エラーが発生しました: {str(e)}"
+    
+    async def _analyze_data_cross_tabulation_handler(self, args: Dict[str, Any]) -> str:
+        """Handle cross tabulation analysis function calls."""
+        if not self.data_analysis_use_case:
+            return "データ分析機能が利用できません"
+        
+        try:
+            from src.llm_report.domain.entities.data_analysis_request import DataAnalysisRequest, AnalysisType
+            
+            file_path = args.get("file_path")
+            row_column = args.get("row_column")
+            column_column = args.get("column_column")
+            
+            if not all([file_path, row_column, column_column]):
+                return "file_path、row_column、column_columnが必要です"
+            
+            request = DataAnalysisRequest(
+                file_path=file_path,
+                analysis_type=AnalysisType.CROSS_TABULATION,
+                group_by_columns=[row_column, column_column]
+            )
+            
+            response = await self.data_analysis_use_case.execute(request)
+            
+            if response.success and response.result:
+                crosstab = response.result
+                return f"""クロス集計結果 ({row_column} × {column_column}):
+{crosstab.table.to_string()}
+
+行合計:
+{crosstab.row_totals.to_string()}
+
+列合計:
+{crosstab.col_totals.to_string()}"""
+            else:
+                return f"分析に失敗しました: {response.error}"
+                
+        except Exception as e:
+            return f"エラーが発生しました: {str(e)}"
+    
+    async def _analyze_data_correlation_handler(self, args: Dict[str, Any]) -> str:
+        """Handle correlation analysis function calls."""
+        if not self.data_analysis_use_case:
+            return "データ分析機能が利用できません"
+        
+        try:
+            from src.llm_report.domain.entities.data_analysis_request import DataAnalysisRequest, AnalysisType
+            
+            file_path = args.get("file_path")
+            columns = args.get("columns", [])
+            
+            if not file_path:
+                return "file_pathが必要です"
+            
+            # If no specific columns provided, analyze all numeric columns
+            if not columns:
+                # We'll let the service determine numeric columns automatically
+                target_columns = None
+            else:
+                target_columns = columns
+            
+            request = DataAnalysisRequest(
+                file_path=file_path,
+                analysis_type=AnalysisType.CORRELATION,
+                target_columns=target_columns
+            )
+            
+            response = await self.data_analysis_use_case.execute(request)
+            
+            if response.success and response.result:
+                corr = response.result
+                result_text = f"相関行列:\n{corr.correlation_matrix.round(3).to_string()}\n\n"
+                
+                if corr.significant_correlations:
+                    result_text += "有意な相関関係 (|r| > 0.5):\n"
+                    for corr_item in corr.significant_correlations:
+                        result_text += f"- {corr_item['var1']} ↔ {corr_item['var2']}: {corr_item['correlation']:.3f}\n"
+                else:
+                    result_text += "有意な相関関係は見つかりませんでした (|r| > 0.5)"
+                
+                return result_text
+            else:
+                return f"分析に失敗しました: {response.error}"
+                
+        except Exception as e:
+            return f"エラーが発生しました: {str(e)}"
+    
+    async def _create_data_visualization_handler(self, args: Dict[str, Any]) -> str:
+        """Handle data visualization function calls."""
+        if not self.data_analysis_use_case:
+            return "データ分析機能が利用できません"
+        
+        try:
+            from src.llm_report.domain.entities.data_analysis_request import DataAnalysisRequest, AnalysisType, ChartType
+            
+            file_path = args.get("file_path")
+            chart_type = args.get("chart_type")
+            x_column = args.get("x_column")
+            y_column = args.get("y_column")
+            target_column = args.get("target_column")
+            
+            if not file_path or not chart_type:
+                return "file_pathとchart_typeが必要です"
+            
+            # Determine target columns based on chart type
+            if chart_type == "bar_chart":
+                if not x_column or not y_column:
+                    return "bar_chartにはx_columnとy_columnが必要です"
+                target_columns = [x_column, y_column]
+                chart_type_enum = ChartType.BAR_CHART
+            elif chart_type == "histogram":
+                if not target_column:
+                    return "histogramにはtarget_columnが必要です"
+                target_columns = [target_column]
+                chart_type_enum = ChartType.HISTOGRAM
+            elif chart_type == "heatmap":
+                target_columns = []
+                chart_type_enum = ChartType.HEATMAP
+            else:
+                return f"サポートされていないグラフタイプ: {chart_type}"
+            
+            request = DataAnalysisRequest(
+                file_path=file_path,
+                analysis_type=AnalysisType.VISUALIZATION,
+                target_columns=target_columns,
+                chart_type=chart_type_enum
+            )
+            
+            response = await self.data_analysis_use_case.execute(request)
+            
+            if response.success and response.result:
+                viz = response.result
+                return f"""可視化が作成されました:
+- グラフタイプ: {viz.chart_type}
+- 説明: {viz.description}
+- データサマリー: {viz.data_summary}
+
+グラフは保存されました。"""
+            else:
+                return f"可視化に失敗しました: {response.error}"
+                
+        except Exception as e:
+            return f"エラーが発生しました: {str(e)}"
