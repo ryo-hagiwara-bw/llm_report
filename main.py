@@ -9,6 +9,7 @@ from src.llm_report.domain.value_objects.model_config import ModelConfig
 from src.llm_report.domain.entities.generation_request import GenerationRequest
 from src.llm_report.infrastructure.config.dependency_container import DependencyContainer, ContainerConfig
 from src.llm_report.application.use_cases.generate_content_use_case import GenerateContentUseCase
+from src.llm_report.application.use_cases.function_calling_use_case import FunctionCallingUseCase, FunctionCallingRequest
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,18 +36,62 @@ class SimpleLLMApp:
             location=location
         )
         self.generate_content_use_case = self.container.get_generate_content_use_case()
+        self.function_calling_use_case = self.container.get_function_calling_use_case()
         
-        # Function handlers for simulation
-        self.function_handlers = {}
-        self._register_default_functions()
+        # Function definitions for actual function calling
+        self.functions = self._get_function_definitions()
     
-    def _register_default_functions(self):
-        """Register default function handlers."""
-        self.function_handlers = {
-            "get_weather": self._weather_handler,
-            "calculate": self._calculator_handler,
-            "get_time": self._time_handler
-        }
+    def _get_function_definitions(self):
+        """Get function definitions for Vertex AI function calling."""
+        return [
+            {
+                "name": "get_weather",
+                "description": "指定された場所の現在の天気を取得します。",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "location": {
+                            "type": "string",
+                            "description": "都市名（例：東京、大阪、福岡）"
+                        },
+                        "unit": {
+                            "type": "string",
+                            "enum": ["celsius", "fahrenheit"],
+                            "description": "温度の単位"
+                        }
+                    },
+                    "required": ["location"]
+                }
+            },
+            {
+                "name": "calculate",
+                "description": "数学的な計算を実行します。",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "expression": {
+                            "type": "string",
+                            "description": "計算式（例：15 * 8, 100 / 4）"
+                        }
+                    },
+                    "required": ["expression"]
+                }
+            },
+            {
+                "name": "get_time",
+                "description": "指定されたタイムゾーンの現在時刻を取得します。",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "timezone": {
+                            "type": "string",
+                            "description": "タイムゾーン（例：Asia/Tokyo, UTC）"
+                        }
+                    },
+                    "required": ["timezone"]
+                }
+            }
+        ]
     
     async def generate_content(self, prompt_text: str, model: str = "gemini-2.5-pro") -> str:
         """Generate content from a prompt using DDD architecture.
@@ -73,7 +118,7 @@ class SimpleLLMApp:
             raise
     
     async def generate_with_functions(self, prompt_text: str, model: str = "gemini-2.5-pro") -> Dict[str, Any]:
-        """Generate content with function calling simulation.
+        """Generate content with actual function calling using Vertex AI.
         
         Args:
             prompt_text: User prompt
@@ -83,73 +128,39 @@ class SimpleLLMApp:
             Generation result with function calls
         """
         try:
-            # Generate basic content using DDD
-            content = await self.generate_content(prompt_text, model)
+            # Create domain objects
+            prompt = Prompt(content=prompt_text)
+            model_config = ModelConfig(name=model, temperature=0.7)
             
-            # Simulate function calling based on prompt content
-            function_calls = []
-            function_results = []
+            # Create function calling request
+            request = FunctionCallingRequest(
+                prompt=prompt,
+                model=model_config,
+                functions=self.functions
+            )
             
-            # Weather function simulation
-            if "天気" in prompt_text or "weather" in prompt_text.lower():
-                location = "東京"  # Default
-                if "大阪" in prompt_text:
-                    location = "大阪"
-                elif "福岡" in prompt_text:
-                    location = "福岡"
-                
-                function_calls.append({
-                    "name": "get_weather",
-                    "args": {"location": location}
-                })
-                
-                result = await self.function_handlers["get_weather"]({"location": location})
-                function_results.append({
-                    "name": "get_weather",
-                    "args": {"location": location},
-                    "result": result,
-                    "success": True
-                })
-            
-            # Calculator function simulation
-            if any(op in prompt_text for op in ["+", "-", "*", "/", "計算", "calculate"]):
-                import re
-                numbers = re.findall(r'\d+', prompt_text)
-                if len(numbers) >= 2:
-                    expression = f"{numbers[0]} * {numbers[1]}" if "*" in prompt_text else f"{numbers[0]} + {numbers[1]}"
-                    function_calls.append({
-                        "name": "calculate",
-                        "args": {"expression": expression}
-                    })
-                    
-                    result = await self.function_handlers["calculate"]({"expression": expression})
-                    function_results.append({
-                        "name": "calculate",
-                        "args": {"expression": expression},
-                        "result": result,
-                        "success": True
-                    })
-            
-            # Time function simulation
-            if "時刻" in prompt_text or "時間" in prompt_text or "time" in prompt_text.lower():
-                function_calls.append({
-                    "name": "get_time",
-                    "args": {"timezone": "Asia/Tokyo"}
-                })
-                
-                result = await self.function_handlers["get_time"]({"timezone": "Asia/Tokyo"})
-                function_results.append({
-                    "name": "get_time",
-                    "args": {"timezone": "Asia/Tokyo"},
-                    "result": result,
-                    "success": True
-                })
+            # Execute function calling use case
+            response = await self.function_calling_use_case.execute(request)
             
             return {
-                "content": content,
-                "function_calls": function_calls,
-                "function_results": function_results,
-                "has_function_calls": len(function_calls) > 0
+                "content": response.content,
+                "function_calls": [
+                    {
+                        "name": call.name,
+                        "args": call.args,
+                        "call_id": call.call_id
+                    } for call in response.function_calls
+                ],
+                "function_results": [
+                    {
+                        "name": result.name,
+                        "call_id": result.call_id,
+                        "result": result.response
+                    } for result in response.function_results
+                ],
+                "has_function_calls": len(response.function_calls) > 0,
+                "success": response.success,
+                "error": response.error
             }
             
         except Exception as e:
@@ -159,35 +170,10 @@ class SimpleLLMApp:
                 "function_calls": [],
                 "function_results": [],
                 "has_function_calls": False,
+                "success": False,
                 "error": str(e)
             }
     
-    # Function handlers
-    async def _weather_handler(self, args: Dict[str, Any]) -> str:
-        """Handle weather function calls."""
-        location = args.get("location", "Unknown")
-        weather_data = {
-            "東京": "晴れ、25度",
-            "大阪": "曇り、23度",
-            "福岡": "雨、20度"
-        }
-        return weather_data.get(location, f"{location}の天気情報はありません")
-    
-    async def _calculator_handler(self, args: Dict[str, Any]) -> str:
-        """Handle calculator function calls."""
-        expression = args.get("expression", "")
-        try:
-            result = eval(expression)
-            return f"{expression} = {result}"
-        except Exception as e:
-            return f"計算エラー: {e}"
-    
-    async def _time_handler(self, args: Dict[str, Any]) -> str:
-        """Handle time function calls."""
-        timezone = args.get("timezone", "UTC")
-        from datetime import datetime
-        current_time = datetime.now()
-        return f"{timezone}の現在時刻: {current_time.strftime('%Y-%m-%d %H:%M:%S')}"
 
 
 async def main():

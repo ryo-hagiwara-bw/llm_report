@@ -11,4 +11,5 @@ dependencies = [
     "langchain-google-genai>=2.0.10",
     "langgraph>=0.6.6",
     "openai>=1.105.0",
+    "vertexai>=1.38.0",
 ]

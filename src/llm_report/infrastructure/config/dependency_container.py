@@ -6,6 +6,7 @@ from enum import Enum
 from ...domain.repositories.llm_repository import LLMRepository
 from ...infrastructure.repositories.vertex_ai_llm_repository import VertexAILLMRepository
 from ...application.use_cases.generate_content_use_case import GenerateContentUseCase
+from ...application.use_cases.function_calling_use_case import FunctionCallingUseCase
 
 
 class ContainerConfig(Enum):
@@ -60,3 +61,17 @@ class DependencyContainer:
             )
         
         return self._instances["generate_content_use_case"]
+    
+    def get_function_calling_use_case(self) -> FunctionCallingUseCase:
+        """Get function calling use case instance.
+        
+        Returns:
+            Function calling use case instance
+        """
+        if "function_calling_use_case" not in self._instances:
+            llm_repository = self.get_llm_repository()
+            self._instances["function_calling_use_case"] = FunctionCallingUseCase(
+                llm_repository=llm_repository
+            )
+        
+        return self._instances["function_calling_use_case"]
