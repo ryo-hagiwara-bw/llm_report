@@ -61,9 +61,8 @@ class LatexGenerationService:
             latex_content = self._assemble_latex_document(base_template, sections, analysis_results)
             print(f"📝 Assembled LaTeX content: {len(latex_content)} characters")
             
-            # 4. ファイルに保存
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            latex_file = os.path.join(self.reports_dir, f"dynamic_analysis_report_{timestamp}.tex")
+            # 4. ファイルに保存（固定ファイル名）
+            latex_file = os.path.join(self.reports_dir, "analysis_report.tex")
             
             print(f"📝 Writing LaTeX file to: {latex_file}")
             print(f"📁 Reports directory exists: {os.path.exists(self.reports_dir)}")

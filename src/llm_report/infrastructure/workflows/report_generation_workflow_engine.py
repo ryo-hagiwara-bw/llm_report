@@ -204,9 +204,8 @@ class ReportGenerationWorkflowEngine:
             latex_content = self.latex_service._assemble_latex_document(base_template, sections, analysis_results)
             print(f"📝 Assembled LaTeX content: {len(latex_content)} characters")
             
-            # ファイルに保存
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            latex_file = os.path.join(self.latex_service.reports_dir, f"dynamic_analysis_report_{timestamp}.tex")
+            # ファイルに保存（固定ファイル名）
+            latex_file = os.path.join(self.latex_service.reports_dir, "analysis_report.tex")
             
             print(f"📝 Writing LaTeX file to: {latex_file}")
             print(f"📁 Reports directory exists: {os.path.exists(self.latex_service.reports_dir)}")
