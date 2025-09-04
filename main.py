@@ -24,11 +24,16 @@ from src.llm_report.application.services.cleanup_service import CleanupService
 from src.llm_report.application.services.latex_generation_service import LatexGenerationService
 from src.llm_report.application.services.business_report_generation_service import BusinessReportGenerationService
 from src.llm_report.application.services.business_latex_report_service import BusinessLatexReportService
+from src.llm_report.application.services.detailed_analysis_report_service import DetailedAnalysisReportService
+from src.llm_report.application.services.markdown_to_latex_service import MarkdownToLatexService
+from src.llm_report.application.services.unified_report_service import UnifiedReportService
 from src.llm_report.infrastructure.workflows.langgraph_workflow_engine import LangGraphWorkflowEngine, WorkflowConfig
 from src.llm_report.infrastructure.workflows.prompt_driven_workflow_engine import PromptDrivenWorkflowEngine
 from src.llm_report.infrastructure.workflows.report_generation_workflow_engine import ReportGenerationWorkflowEngine
 from src.llm_report.infrastructure.workflows.business_report_workflow_engine import BusinessReportWorkflowEngine
 from src.llm_report.infrastructure.workflows.business_latex_workflow_engine import BusinessLatexWorkflowEngine
+from src.llm_report.infrastructure.workflows.high_quality_report_workflow_engine import HighQualityReportWorkflowEngine
+from src.llm_report.infrastructure.workflows.unified_report_workflow_engine import UnifiedReportWorkflowEngine
 
 # Configure logging and suppress all warnings
 logging.basicConfig(level=logging.CRITICAL)
@@ -79,6 +84,15 @@ class IntegratedLLMApp:
         self.business_latex_service = BusinessLatexReportService(
             self.container.get_generate_content_use_case()
         )
+        self.detailed_analysis_service = DetailedAnalysisReportService(
+            self.container.get_generate_content_use_case()
+        )
+        self.markdown_to_latex_service = MarkdownToLatexService(
+            self.container.get_generate_content_use_case()
+        )
+        self.unified_report_service = UnifiedReportService(
+            self.container.get_generate_content_use_case()
+        )
         
         # Initialize LangGraph workflow engine
         self.langgraph_workflow = LangGraphWorkflowEngine(
@@ -108,6 +122,17 @@ class IntegratedLLMApp:
         # Initialize business LaTeX report generation workflow engine
         self.business_latex_workflow = BusinessLatexWorkflowEngine(
             self.business_latex_service
+        )
+        
+        # Initialize high-quality report generation workflow engine
+        self.high_quality_report_workflow = HighQualityReportWorkflowEngine(
+            self.detailed_analysis_service,
+            self.markdown_to_latex_service
+        )
+        
+        # Initialize unified report generation workflow engine
+        self.unified_report_workflow = UnifiedReportWorkflowEngine(
+            self.unified_report_service
         )
     
     async def generate_content(self, prompt: str) -> str:
@@ -388,6 +413,25 @@ async def main():
             print(f"📋 Completed steps: {', '.join(business_latex_result.get('completed_steps', []))}")
         else:
             print(f"❌ Business LaTeX report generation failed: {business_latex_result.get('error', 'Unknown error')}")
+        
+        print()
+        
+        # Test 8: Unified Report Generation - 統合レポート生成
+        print("📊 Generating unified report (report.pdf)...")
+        
+        # 統合レポート生成ワークフローを実行
+        unified_result = await app.unified_report_workflow.execute_workflow(
+            combined_analysis_results, 
+            prompt_driven_prompt
+        )
+        
+        if unified_result["success"]:
+            print(f"✅ Unified report generated successfully!")
+            print(f"📄 PDF file: {unified_result.get('pdf_file')}")
+            print(f"📄 LaTeX file: {unified_result.get('latex_file')}")
+            print(f"📋 Completed steps: {', '.join(unified_result.get('completed_steps', []))}")
+        else:
+            print(f"❌ Unified report generation failed: {unified_result.get('error', 'Unknown error')}")
         
         print()
         

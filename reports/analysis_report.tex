@@ -1,0 +1,124 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[top=2cm,bottom=2cm,left=2cm,right=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{subcaption}
+\usepackage{caption}
+
+% 日本語対応
+\usepackage{xeCJK}
+\setCJKmainfont{Hiragino Kaku Gothic ProN}
+\setCJKsansfont{Hiragino Kaku Gothic ProN}
+\setCJKmonofont{Hiragino Kaku Gothic ProN}
+
+\title{\textbf{動的分析レポート} \\ LangGraphワークフロー分析結果}
+\author{データサイエンスチーム}
+\date{2025年09月04日}
+
+\begin{document}
+
+\maketitle
+
+\vspace{-1cm}
+\begin{center}
+\large{分析日時: 2025年09月04日TIME}
+\end{center}
+
+\tableofcontents
+\newpage
+
+
+\section{データ概要}
+\subsection{基本統計}
+\begin{itemize}
+\item データ形状: 425行 × 10列
+\item 分析日時: 2025年09月04日 19:07:52
+\end{itemize}
+
+
+\section{LangGraph分析結果}
+\subsection{ワークフロー実行結果}
+\begin{itemize}
+\item 完了ステップ: 
+\item 生成ファイル数: 0
+\item 洞察数: 0
+\end{itemize}
+
+
+\section{プロンプト駆動分析結果}
+\subsection{分析概要}
+\begin{itemize}
+\item 完了ステップ: load_data, analyze_data_overview, select_function, execute_function, display_results
+\item 生成ファイル数: 0
+\end{itemize}
+
+\subsection{選択された関数}
+\begin{itemize}
+\item 関数名: analyze_by_dimensions
+\item 信頼度: 0.95
+\item 推論: ユーザーは万博開催後の万博会場にエリア内居住者の平均滞在時間を分析することを求めています。そのため、'analyze_by_dimensions'関数を選択し、'average_daily_visiting_seconds'をターゲットメトリックとして、'area', 'home_area', 'work_area', 'day_type', 'gender', 'age'でグループ化し、'period'を'万博開催後'、'area'を'万博会場'、'home_area'を'エリア内'でフィルタリングすることで、プロンプトの要求を満たす分析が可能と考えられます。
+\end{itemize}
+
+\subsection{実行結果}
+\begin{itemize}
+\item 成功: True
+\item 実行時間: 0.01秒
+\end{itemize}
+
+\section{分析洞察}
+\begin{itemize}
+\item analyze\_by\_dimensions の実行結果:\\
+ComprehensiveAnalysisResult(target\_metric='average\_daily\_visiting\_seconds',\\
+group\_by=['area', 'home\_area', 'work\_area', 'day\_type', 'gender', 'age'],\\
+analysis\_type='summary', results=[DimensionAnalysisResult(dimension='area',\\
+values=['万博会場'], statistics={'count': 3, 'mean': 65437.86658666667, 'std':\\
+63226.79973116051, 'min': 25121.45196, 'max': 138308.2, 'median': 32883.9478},\\
+count=3, percentage=100.0, insights=["area '万博会場' represents 100.0% of the data\\
+(majority)"]), DimensionAnalysisResult(dimension='home\_area', values=['エリア内'],\\
+statistics={'count': 3, 'mean': 65437.86658666667, 'std': 63226.79973116051,\\
+'min': 25121.45196, 'max': 138308.2, 'median': 32883.9478}, count=3,\\
+percentage=100.0, insights=["home\_area 'エリア内' represents 100.0% of the data\\
+(majority)"]), DimensionAnalysisResult(dimension='work\_area', values=['エリア内'],\\
+statistics={'count': 1, 'mean': 138308.2, 'std': nan, 'min': 138308.2, 'max':\\
+138308.2, 'median': 138308.2}, count=1, percentage=33.33333333333333,\\
+insights=["work\_area 'エリア内' represents 33.3% of the data (significant)"]),\\
+DimensionAnalysisResult(dimension='work\_area', values=['エリア外'],\\
+statistics={'count': 2, 'mean': 29002.69988, 'std': 5488.913447396368, 'min':\\
+25121.45196, 'max': 32883.9478, 'median': 29002.69988}, count=2,\\
+percentage=66.66666666666666, insights=["work\_area 'エリア外' represents 66.7% of\\
+the data (majority)"]), DimensionAnalysisResult(dimension='day\_type',\\
+values=['土日祝日'], statistics={'count': 1, 'mean': 32883.9478, 'std': nan, 'min':\\
+32883.9478, 'max': 32883.9478, 'median': 32883.9478}, count=1,\\
+percentage=33.33333333333333, insights=["day\_type '土日祝日' represents 33.3% of the\\
+data (significant)"]), DimensionAnalysisResult(dimension='day\_type',\\
+values=['平日'], statistics={'count': 2, 'mean': 81714.82598000001, 'std':\\
+80035.11707953717, 'min': 25121.45196, 'max': 138308.2, 'median':\\
+81714.82598000001}, count=2, percentage=66.66666666666666, insights=["day\_type\\
+'平日' represents 66.7% of the data (majority)"]),\\
+DimensionAnalysisResult(dimension='gender', values=['不明'], statistics={'count':\\
+3, 'mean': 65437.86658666667, 'std': 63226.79973116051, 'min': 25121.45196,\\
+'max': 138308.2, 'median': 32883.9478}, count=3, percentage=100.0,\\
+insights=["gender '不明' represents 100.0% of the data (majority)"]),\\
+DimensionAnalysisResult(dimension='age', values=['不明'], statistics={'count': 3,\\
+'mean': 65437.86658666667, 'std': 63226.79973116051, 'min': 25121.45196, 'max':\\
+138308.2, 'median': 32883.9478}, count=3, percentage=100.0, insights=["age '不明'\\
+represents 100.0% of the data (majority)"])], summary\_statistics={'count': 3.0,\\
+'mean': 65437.86658666667, 'std': 63226.79973116051, 'min': 25121.45196, '25%':\\
+29002.69988, '50%': 32883.9478, '75%': 85596.0739, 'max': 138308.2},\\
+visualizations=[], insights=[], recommendations=[])
+\end{itemize}
+
+
+\end{document}
