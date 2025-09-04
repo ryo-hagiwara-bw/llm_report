@@ -17,4 +17,5 @@ output/
 
 tmp/
 
-reports/shこn
+# Generated reports
+reports/
