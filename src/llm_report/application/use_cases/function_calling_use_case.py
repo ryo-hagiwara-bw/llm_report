@@ -54,15 +54,17 @@ class FunctionCallingResponse:
 class FunctionCallingUseCase:
     """Simple use case for handling function calling with LLM."""
     
-    def __init__(self, llm_repository, data_analysis_use_case=None):
+    def __init__(self, llm_repository, data_analysis_use_case=None, advanced_data_analysis_use_case=None):
         """Initialize the use case.
         
         Args:
             llm_repository: Repository for LLM operations
             data_analysis_use_case: Data analysis use case (optional)
+            advanced_data_analysis_use_case: Advanced data analysis use case (optional)
         """
         self.llm_repository = llm_repository
         self.data_analysis_use_case = data_analysis_use_case
+        self.advanced_data_analysis_use_case = advanced_data_analysis_use_case
         self.function_handlers = {}
         self._register_default_functions()
     
@@ -76,6 +78,11 @@ class FunctionCallingUseCase:
             "analyze_data_cross_tabulation": self._analyze_data_cross_tabulation_handler,
             "analyze_data_correlation": self._analyze_data_correlation_handler,
             "create_visualization": self._create_visualization_handler,
+            "analyze_by_dimensions": self._analyze_by_dimensions_handler,
+            "create_comprehensive_report": self._create_comprehensive_report_handler,
+            "analyze_temporal_changes": self._analyze_temporal_changes_handler,
+            "create_dashboard": self._create_dashboard_handler,
+            "get_data_summary": self._get_data_summary_handler,
         }
     
     async def execute(self, request: FunctionCallingRequest) -> FunctionCallingResponse:
@@ -167,6 +174,36 @@ class FunctionCallingUseCase:
                 
                 # Update content with function result
                 content = f"現在の時間をお答えします。{result}"
+            
+            elif "データ分析" in request.prompt or "分析" in request.prompt or "csv" in request.prompt.lower():
+                # Advanced data analysis
+                function_calls.append(FunctionCall(
+                    name="create_comprehensive_report",
+                    args={
+                        "file_path": "dataset/result_15_osakabanpaku_stay.csv",
+                        "target_metrics": ["visitor_count", "average_daily_visiting_seconds", "average_visit_count"],
+                        "key_dimensions": ["area", "period", "gender", "age", "day_type"],
+                        "report_type": "full"
+                    },
+                    call_id="analysis_call_1"
+                ))
+                
+                # Execute the function
+                result = await self._create_comprehensive_report_handler({
+                    "file_path": "dataset/result_15_osakabanpaku_stay.csv",
+                    "target_metrics": ["visitor_count", "average_daily_visiting_seconds", "average_visit_count"],
+                    "key_dimensions": ["area", "period", "gender", "age", "day_type"],
+                    "report_type": "full"
+                })
+                function_results.append(FunctionResult(
+                    call_id="analysis_call_1",
+                    name="create_comprehensive_report",
+                    response=result
+                ))
+                iterations += 1
+                
+                # Update content with function result
+                content = f"包括的なデータ分析を実行しました。{result}"
             
             # If no specific function was detected, return the original content
             if not function_calls:
@@ -298,3 +335,130 @@ class FunctionCallingUseCase:
             
         except Exception as e:
             return f"可視化エラー: {str(e)}"
+    
+    async def _analyze_by_dimensions_handler(self, args: Dict[str, Any]) -> str:
+        """Handle dimension-based analysis."""
+        if not self.advanced_data_analysis_use_case:
+            return "高度なデータ分析機能が利用できません。"
+        
+        try:
+            file_path = args.get("file_path", "dataset/result_15_osakabanpaku_stay.csv")
+            target_metric = args.get("target_metric", "visitor_count")
+            group_by = args.get("group_by", ["area"])
+            analysis_type = args.get("analysis_type", "summary")
+            filters = args.get("filters", {})
+            
+            response = self.advanced_data_analysis_use_case.execute_specific_analysis(
+                file_path=file_path,
+                target_metric=target_metric,
+                group_by=group_by,
+                analysis_type=analysis_type,
+                filters=filters
+            )
+            
+            if response.success:
+                return f"次元分析完了: {target_metric}を{group_by}で分析"
+            else:
+                return f"次元分析エラー: {response.error}"
+                
+        except Exception as e:
+            return f"次元分析エラー: {str(e)}"
+    
+    async def _create_comprehensive_report_handler(self, args: Dict[str, Any]) -> str:
+        """Handle comprehensive report creation."""
+        if not self.advanced_data_analysis_use_case:
+            return "高度なデータ分析機能が利用できません。"
+        
+        try:
+            from ...application.use_cases.advanced_data_analysis_use_case import AdvancedAnalysisRequest
+            
+            request = AdvancedAnalysisRequest(
+                file_path=args.get("file_path", "dataset/result_15_osakabanpaku_stay.csv"),
+                target_metrics=args.get("target_metrics", ["visitor_count"]),
+                key_dimensions=args.get("key_dimensions", ["area"]),
+                analysis_types=args.get("analysis_types", ["summary"]),
+                filters=args.get("filters", {}),
+                report_type=args.get("report_type", "full"),
+                export_format=args.get("export_format", "excel")
+            )
+            
+            response = self.advanced_data_analysis_use_case.execute_comprehensive_analysis(request)
+            
+            if response.success and response.report:
+                return f"包括的レポート作成完了: {len(response.report.analysis_results)}個の分析結果、{len(response.file_paths)}個のファイル生成"
+            else:
+                return f"包括的レポート作成エラー: {response.error}"
+                
+        except Exception as e:
+            return f"包括的レポート作成エラー: {str(e)}"
+    
+    async def _analyze_temporal_changes_handler(self, args: Dict[str, Any]) -> str:
+        """Handle temporal analysis."""
+        if not self.advanced_data_analysis_use_case:
+            return "高度なデータ分析機能が利用できません。"
+        
+        try:
+            file_path = args.get("file_path", "dataset/result_15_osakabanpaku_stay.csv")
+            target_metrics = args.get("target_metrics", ["visitor_count"])
+            key_dimensions = args.get("key_dimensions", ["area"])
+            time_dimension = args.get("time_dimension", "period")
+            
+            response = self.advanced_data_analysis_use_case.execute_temporal_analysis(
+                file_path=file_path,
+                target_metrics=target_metrics,
+                key_dimensions=key_dimensions,
+                time_dimension=time_dimension
+            )
+            
+            if response.success:
+                return f"時系列分析完了: {time_dimension}での変化を分析"
+            else:
+                return f"時系列分析エラー: {response.error}"
+                
+        except Exception as e:
+            return f"時系列分析エラー: {str(e)}"
+    
+    async def _create_dashboard_handler(self, args: Dict[str, Any]) -> str:
+        """Handle dashboard creation."""
+        if not self.advanced_data_analysis_use_case:
+            return "高度なデータ分析機能が利用できません。"
+        
+        try:
+            file_path = args.get("file_path", "dataset/result_15_osakabanpaku_stay.csv")
+            config = args.get("config", {
+                "target_metric": "visitor_count",
+                "category_column": "area",
+                "time_column": "period",
+                "value_column": "visitor_count"
+            })
+            
+            response = self.advanced_data_analysis_use_case.create_dashboard(
+                file_path=file_path,
+                config=config
+            )
+            
+            if response.success:
+                return f"ダッシュボード作成完了: {response.file_paths[0] if response.file_paths else 'N/A'}"
+            else:
+                return f"ダッシュボード作成エラー: {response.error}"
+                
+        except Exception as e:
+            return f"ダッシュボード作成エラー: {str(e)}"
+    
+    async def _get_data_summary_handler(self, args: Dict[str, Any]) -> str:
+        """Handle data summary generation."""
+        if not self.advanced_data_analysis_use_case:
+            return "高度なデータ分析機能が利用できません。"
+        
+        try:
+            file_path = args.get("file_path", "dataset/result_15_osakabanpaku_stay.csv")
+            
+            summary = self.advanced_data_analysis_use_case.get_data_summary(file_path)
+            
+            if "error" not in summary:
+                return f"データサマリー: {summary['shape'][0]}行×{summary['shape'][1]}列、{len(summary['numeric_columns'])}個の数値列、{len(summary['categorical_columns'])}個のカテゴリ列"
+            else:
+                return f"データサマリーエラー: {summary['error']}"
+                
+        except Exception as e:
+            return f"データサマリーエラー: {str(e)}"

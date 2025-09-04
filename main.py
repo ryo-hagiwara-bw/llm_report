@@ -15,6 +15,7 @@ from src.llm_report.application.use_cases.function_calling_use_case import Funct
 from src.llm_report.application.use_cases.data_analysis_use_case import DataAnalysisUseCase
 from src.llm_report.application.services.data_loader_service import DataLoaderService
 from src.llm_report.application.services.data_analysis_service import DataAnalysisService
+from src.llm_report.application.services.advanced_data_analysis_service import AdvancedDataAnalysisService
 from src.llm_report.infrastructure.workflows.clean_workflow_engine import CleanWorkflowEngine
 
 # Configure logging and suppress all warnings
@@ -46,6 +47,7 @@ class FixedFinalLLMApp:
         # Initialize services
         self.data_loader = DataLoaderService()
         self.data_analyzer = DataAnalysisService()
+        self.advanced_analyzer = AdvancedDataAnalysisService()
         self.data_analysis_use_case = DataAnalysisUseCase(self.data_loader, self.data_analyzer)
         
         # Initialize workflow engine
@@ -86,7 +88,8 @@ class FixedFinalLLMApp:
             
             use_case = FunctionCallingUseCase(
                 self.container.get_llm_repository(),
-                self.data_analysis_use_case
+                self.data_analysis_use_case,
+                self.advanced_analyzer
             )
             
             response = await use_case.execute(request)
@@ -185,7 +188,58 @@ async def main():
                 print(f"- {result['name']}: {result['result']}")
         print()
         
-        # Test 3: Data Analysis Workflow
+        # Test 3: Advanced Data Analysis
+        advanced_prompt = "万博開催後の万博会場で、エリア内居住者の平均滞在時間を分析して"
+        print(f"Prompt: {advanced_prompt}")
+        print("Response: Advanced analysis executing...")
+        
+        # Advanced analysis example
+        advanced_result = app.advanced_analyzer.analyze_by_dimensions(
+            data=app.data_loader.load_csv_data("dataset/result_15_osakabanpaku_stay.csv"),
+            target_metric="average_daily_visiting_seconds",
+            group_by=["period", "area", "home_area"],
+            filters={"period": "万博開催後", "area": "万博会場", "home_area": "エリア内"}
+        )
+        
+        if advanced_result:
+            print(f"✅ Advanced analysis completed!")
+            print(f"📊 Target metric: {advanced_result.target_metric}")
+            print(f"📋 Group by: {', '.join(advanced_result.group_by)}")
+            print(f"📈 Analysis type: {advanced_result.analysis_type}")
+            print(f"💡 Insights: {len(advanced_result.insights)} insights generated")
+            
+            if advanced_result.results:
+                for result in advanced_result.results[:3]:  # Show first 3 results
+                    print(f"   - {result.dimension}: {result.values[0]} - Mean: {result.statistics.get('mean', 0):.2f}")
+        
+        print()
+        
+        # Test 4: Comprehensive Report
+        comprehensive_prompt = "包括的なデータ分析レポートを作成して"
+        print(f"Prompt: {comprehensive_prompt}")
+        print("Response: Comprehensive report generation...")
+        
+        comprehensive_report = app.advanced_analyzer.create_comprehensive_report(
+            data=app.data_loader.load_csv_data("dataset/result_15_osakabanpaku_stay.csv"),
+            target_metrics=["visitor_count", "average_daily_visiting_seconds", "average_visit_count"],
+            key_dimensions=["area", "period", "gender", "age", "day_type"]
+        )
+        
+        if comprehensive_report:
+            print(f"✅ Comprehensive report completed!")
+            print(f"📊 Report ID: {comprehensive_report.report_id}")
+            print(f"📈 Analysis results: {len(comprehensive_report.analysis_results)}")
+            print(f"⏱️  Temporal analysis: {len(comprehensive_report.temporal_analysis)}")
+            print(f"💡 Overall insights: {len(comprehensive_report.overall_insights)}")
+            print(f"📁 Generated files: {len(comprehensive_report.file_paths)}")
+            
+            # Show some insights
+            for i, insight in enumerate(comprehensive_report.overall_insights[:3], 1):
+                print(f"   {i}. {insight}")
+        
+        print()
+        
+        # Test 5: Data Analysis Workflow (Original)
         workflow_prompt = "dataset/result_15_osakabanpaku_stay.csvの包括的なデータ分析を実行して"
         print(f"Prompt: {workflow_prompt}")
         print("Response: Clean workflow engine executing...")
