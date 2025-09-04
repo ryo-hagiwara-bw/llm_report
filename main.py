@@ -20,6 +20,7 @@ from src.llm_report.application.services.data_overview_service import DataOvervi
 from src.llm_report.application.services.llm_function_selection_service import LLMFunctionSelectionService
 from src.llm_report.application.services.dynamic_function_execution_service import DynamicFunctionExecutionService
 from src.llm_report.application.services.temp_save_service import TempSaveService
+from src.llm_report.application.services.cleanup_service import CleanupService
 from src.llm_report.infrastructure.workflows.langgraph_workflow_engine import LangGraphWorkflowEngine, WorkflowConfig
 from src.llm_report.infrastructure.workflows.prompt_driven_workflow_engine import PromptDrivenWorkflowEngine
 
@@ -64,6 +65,7 @@ class IntegratedLLMApp:
             self.advanced_analyzer
         )
         self.temp_save_service = TempSaveService()
+        self.cleanup_service = CleanupService()
         
         # Initialize LangGraph workflow engine
         self.langgraph_workflow = LangGraphWorkflowEngine(
@@ -352,8 +354,35 @@ async def main():
         
         print()
         
+        # Cleanup temporary files and generated images
+        print("🧹 Cleaning up temporary files and generated images...")
+        cleanup_result = app.cleanup_service.cleanup_all()
+        
+        if cleanup_result.success:
+            print(f"✅ Cleanup completed successfully!")
+            print(f"🗑️  Deleted {len(cleanup_result.deleted_files)} files")
+            if cleanup_result.deleted_directories:
+                print(f"📁 Deleted {len(cleanup_result.deleted_directories)} directories")
+        else:
+            print(f"⚠️  Cleanup failed: {cleanup_result.error}")
+        
+        print()
+        
     except Exception as e:
         print(f"❌ Application error: {e}")
+        
+        # Cleanup even if there was an error
+        try:
+            print("🧹 Cleaning up temporary files and generated images...")
+            cleanup_result = app.cleanup_service.cleanup_all()
+            if cleanup_result.success:
+                print(f"✅ Cleanup completed successfully!")
+                print(f"🗑️  Deleted {len(cleanup_result.deleted_files)} files")
+            else:
+                print(f"⚠️  Cleanup failed: {cleanup_result.error}")
+        except Exception as cleanup_error:
+            print(f"❌ Cleanup error: {cleanup_error}")
+        
         return 1
     
     return 0
