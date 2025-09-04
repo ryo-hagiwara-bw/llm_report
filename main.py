@@ -21,8 +21,10 @@ from src.llm_report.application.services.llm_function_selection_service import L
 from src.llm_report.application.services.dynamic_function_execution_service import DynamicFunctionExecutionService
 from src.llm_report.application.services.temp_save_service import TempSaveService
 from src.llm_report.application.services.cleanup_service import CleanupService
+from src.llm_report.application.services.latex_generation_service import LatexGenerationService
 from src.llm_report.infrastructure.workflows.langgraph_workflow_engine import LangGraphWorkflowEngine, WorkflowConfig
 from src.llm_report.infrastructure.workflows.prompt_driven_workflow_engine import PromptDrivenWorkflowEngine
+from src.llm_report.infrastructure.workflows.report_generation_workflow_engine import ReportGenerationWorkflowEngine
 
 # Configure logging and suppress all warnings
 logging.basicConfig(level=logging.CRITICAL)
@@ -66,6 +68,7 @@ class IntegratedLLMApp:
         )
         self.temp_save_service = TempSaveService()
         self.cleanup_service = CleanupService()
+        self.latex_service = LatexGenerationService()
         
         # Initialize LangGraph workflow engine
         self.langgraph_workflow = LangGraphWorkflowEngine(
@@ -79,6 +82,12 @@ class IntegratedLLMApp:
             self.data_overview_service,
             self.llm_function_selection_service,
             self.dynamic_function_execution_service
+        )
+        
+        # Initialize report generation workflow engine
+        self.report_generation_workflow = ReportGenerationWorkflowEngine(
+            self.latex_service,
+            self.temp_save_service
         )
     
     async def generate_content(self, prompt: str) -> str:
@@ -99,7 +108,7 @@ class IntegratedLLMApp:
             if response.content and response.content.strip():
                 return response.content
             else:
-                return f"こんにちは！{prompt}についてお答えします。今日はいい天気ですね。"
+                return f"こんにちは！{prompt}につい天気お答えします。今日はいい天気ですね。"
             
         except Exception as e:
             # More meaningful fallback response
@@ -231,71 +240,6 @@ async def main():
         # Initialize application
         app = IntegratedLLMApp()
         
-        # Test 1: Basic content generation
-        basic_prompt = "こんにちは！今日はいい天気ですね。"
-        basic_response = await app.generate_content(basic_prompt)
-        print(f"Prompt: {basic_prompt}")
-        print(f"Response: {basic_response}")
-        print()
-        
-        # Test 2: Function calling
-        function_prompt = "東京の天気を教えて"
-        function_result = await app.generate_with_functions(function_prompt)
-        print(f"Prompt: {function_prompt}")
-        print(f"Response: {function_result['content']}")
-        if function_result['function_results']:
-            print("**Function Results:**")
-            for result in function_result['function_results']:
-                print(f"- {result['name']}: {result['result']}")
-        print()
-        
-        # Test 3: LangGraph Workflow - 手動設定
-        langgraph_prompt = "LangGraphで包括的なデータ分析を実行して"
-        print(f"Prompt: {langgraph_prompt}")
-        print("Response: LangGraph workflow executing...")
-        
-        # Define parameters for LangGraph workflow
-        target_metrics = ["visitor_count", "average_daily_visiting_seconds"]
-        key_dimensions = ["area", "period", "gender"]
-        filters = {"period": "万博開催後", "area": "万博会場"}
-        
-        langgraph_result = await app.execute_langgraph_workflow(
-            file_path="dataset/result_15_osakabanpaku_stay.csv",
-            target_metrics=target_metrics,
-            key_dimensions=key_dimensions,
-            analysis_types=["summary", "comparison"],
-            filters=filters,
-            report_type="full",
-            export_format="excel"
-        )
-        
-        if langgraph_result["success"]:
-            print(f"✅ LangGraph workflow completed successfully!")
-            print(f"📊 Data shape: {langgraph_result['data'].shape if langgraph_result['data'] is not None else 'N/A'}")
-            print(f"📋 Completed steps: {', '.join(langgraph_result['completed_steps'])}")
-            print(f"💡 Insights: {len(langgraph_result['insights'])} insights generated")
-            print(f"📁 Generated files: {len(langgraph_result['file_paths'])} files")
-            
-            # Save LangGraph result to temporary file
-            save_result = app.temp_save_service.save_analysis_result(
-                analysis_type="langgraph",
-                prompt=langgraph_prompt,
-                result=langgraph_result,
-                additional_info={
-                    "target_metrics": target_metrics,
-                    "key_dimensions": key_dimensions,
-                    "filters": filters
-                }
-            )
-            if save_result.success:
-                print(f"💾 LangGraph result saved to: {save_result.file_path}")
-            else:
-                print(f"⚠️  Failed to save LangGraph result: {save_result.error}")
-        else:
-            print(f"❌ LangGraph workflow failed: {langgraph_result.get('error', 'Unknown error')}")
-        print()
-        
-        # Test 4: Prompt-driven Workflow - 自動分析
         prompt_driven_prompt = "万博開催後の万博会場で、エリア内居住者の平均滞在時間を分析して"
         print(f"Prompt: {prompt_driven_prompt}")
         print("Response: Prompt-driven workflow executing...")
@@ -351,6 +295,42 @@ async def main():
                     print(f"⚠️  Failed to save function selection: {fs_save_result.error}")
         else:
             print(f"❌ Prompt-driven workflow failed: {prompt_driven_result.get('error', 'Unknown error')}")
+        
+        print()
+        
+        # Test 5: Report Generation - 動的LaTeXレポート生成
+        print("📝 Generating dynamic LaTeX report...")
+        
+        # 分析結果を統合（変数が定義されていない場合はデフォルト値を使用）
+        combined_analysis_results = {
+            "langgraph_analysis": langgraph_result if 'langgraph_result' in locals() else {"success": False, "error": "LangGraph workflow not executed"},
+            "prompt_driven_analysis": prompt_driven_result if 'prompt_driven_result' in locals() else {"success": False, "error": "Prompt-driven workflow not executed"},
+            "data": (langgraph_result.get("data") if 'langgraph_result' in locals() and langgraph_result.get("data") is not None 
+                    else prompt_driven_result.get("data") if 'prompt_driven_result' in locals() else None),
+            "insights": ((langgraph_result.get("insights", []) if 'langgraph_result' in locals() else []) + 
+                        (prompt_driven_result.get("insights", []) if 'prompt_driven_result' in locals() else [])),
+            "file_paths": ((langgraph_result.get("file_paths", []) if 'langgraph_result' in locals() else []) + 
+                          (prompt_driven_result.get("file_paths", []) if 'prompt_driven_result' in locals() else [])),
+            "errors": []
+        }
+        
+        # エラーがある場合は追加
+        if 'langgraph_result' in locals() and not langgraph_result.get("success"):
+            combined_analysis_results["errors"].append(f"LangGraph error: {langgraph_result.get('error')}")
+        if 'prompt_driven_result' in locals() and not prompt_driven_result.get("success"):
+            combined_analysis_results["errors"].append(f"Prompt-driven error: {prompt_driven_result.get('error')}")
+        
+        # レポート生成ワークフローを実行
+        report_result = await app.report_generation_workflow.execute_workflow(combined_analysis_results)
+        
+        if report_result["success"]:
+            print(f"✅ Dynamic LaTeX report generated successfully!")
+            print(f"📄 LaTeX file: {report_result.get('latex_file')}")
+            print(f"📄 PDF file: {report_result.get('pdf_file')}")
+            print(f"📋 Generated sections: {len(report_result.get('generated_sections', []))}")
+            print(f"📋 Completed steps: {', '.join(report_result.get('completed_steps', []))}")
+        else:
+            print(f"❌ Report generation failed: {report_result.get('error', 'Unknown error')}")
         
         print()
         

@@ -67,7 +67,7 @@ class CleanupService:
             )
     
     def cleanup_output_files(self) -> CleanupResult:
-        """Clean up all generated output files.
+        """Clean up all generated output files (but keep reports).
         
         Returns:
             CleanupResult with cleanup details
@@ -81,13 +81,15 @@ class CleanupService:
                 for filename in os.listdir(self.output_dir):
                     file_path = os.path.join(self.output_dir, filename)
                     if os.path.isfile(file_path):
+                        # Skip report files (.tex, .pdf)
+                        if filename.endswith(('.tex', '.pdf')):
+                            print(f"📄 Keeping report file: {file_path}")
+                            continue
                         os.remove(file_path)
                         deleted_files.append(file_path)
                 
-                # Remove output directory if empty
-                if not os.listdir(self.output_dir):
-                    os.rmdir(self.output_dir)
-                    deleted_directories.append(self.output_dir)
+                # Don't remove output directory as it may contain reports
+                print(f"📁 Keeping output directory: {self.output_dir}")
             
             return CleanupResult(
                 success=True,
