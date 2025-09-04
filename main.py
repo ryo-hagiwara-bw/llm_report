@@ -19,6 +19,7 @@ from src.llm_report.application.services.advanced_data_analysis_service import A
 from src.llm_report.application.services.data_overview_service import DataOverviewService
 from src.llm_report.application.services.llm_function_selection_service import LLMFunctionSelectionService
 from src.llm_report.application.services.dynamic_function_execution_service import DynamicFunctionExecutionService
+from src.llm_report.application.services.temp_save_service import TempSaveService
 from src.llm_report.infrastructure.workflows.langgraph_workflow_engine import LangGraphWorkflowEngine, WorkflowConfig
 from src.llm_report.infrastructure.workflows.prompt_driven_workflow_engine import PromptDrivenWorkflowEngine
 
@@ -62,6 +63,7 @@ class IntegratedLLMApp:
         self.dynamic_function_execution_service = DynamicFunctionExecutionService(
             self.advanced_analyzer
         )
+        self.temp_save_service = TempSaveService()
         
         # Initialize LangGraph workflow engine
         self.langgraph_workflow = LangGraphWorkflowEngine(
@@ -250,12 +252,17 @@ async def main():
         print(f"Prompt: {langgraph_prompt}")
         print("Response: LangGraph workflow executing...")
         
+        # Define parameters for LangGraph workflow
+        target_metrics = ["visitor_count", "average_daily_visiting_seconds"]
+        key_dimensions = ["area", "period", "gender"]
+        filters = {"period": "万博開催後", "area": "万博会場"}
+        
         langgraph_result = await app.execute_langgraph_workflow(
             file_path="dataset/result_15_osakabanpaku_stay.csv",
-            target_metrics=["visitor_count", "average_daily_visiting_seconds"],
-            key_dimensions=["area", "period", "gender"],
+            target_metrics=target_metrics,
+            key_dimensions=key_dimensions,
             analysis_types=["summary", "comparison"],
-            filters={"period": "万博開催後", "area": "万博会場"},
+            filters=filters,
             report_type="full",
             export_format="excel"
         )
@@ -266,6 +273,22 @@ async def main():
             print(f"📋 Completed steps: {', '.join(langgraph_result['completed_steps'])}")
             print(f"💡 Insights: {len(langgraph_result['insights'])} insights generated")
             print(f"📁 Generated files: {len(langgraph_result['file_paths'])} files")
+            
+            # Save LangGraph result to temporary file
+            save_result = app.temp_save_service.save_analysis_result(
+                analysis_type="langgraph",
+                prompt=langgraph_prompt,
+                result=langgraph_result,
+                additional_info={
+                    "target_metrics": target_metrics,
+                    "key_dimensions": key_dimensions,
+                    "filters": filters
+                }
+            )
+            if save_result.success:
+                print(f"💾 LangGraph result saved to: {save_result.file_path}")
+            else:
+                print(f"⚠️  Failed to save LangGraph result: {save_result.error}")
         else:
             print(f"❌ LangGraph workflow failed: {langgraph_result.get('error', 'Unknown error')}")
         print()
@@ -301,6 +324,29 @@ async def main():
                 print(f"   - Execution time: {er.execution_time:.2f}s" if er.execution_time else "   - Execution time: N/A")
                 if er.error:
                     print(f"   - Error: {er.error}")
+            
+            # Save prompt-driven result to temporary file
+            save_result = app.temp_save_service.save_analysis_result(
+                analysis_type="prompt_driven",
+                prompt=prompt_driven_prompt,
+                result=prompt_driven_result
+            )
+            if save_result.success:
+                print(f"💾 Prompt-driven result saved to: {save_result.file_path}")
+            else:
+                print(f"⚠️  Failed to save prompt-driven result: {save_result.error}")
+            
+            # Save function selection details separately
+            if prompt_driven_result.get("function_selection") and prompt_driven_result.get("execution_result"):
+                fs_save_result = app.temp_save_service.save_function_selection(
+                    prompt=prompt_driven_prompt,
+                    function_selection=prompt_driven_result["function_selection"],
+                    execution_result=prompt_driven_result["execution_result"]
+                )
+                if fs_save_result.success:
+                    print(f"💾 Function selection saved to: {fs_save_result.file_path}")
+                else:
+                    print(f"⚠️  Failed to save function selection: {fs_save_result.error}")
         else:
             print(f"❌ Prompt-driven workflow failed: {prompt_driven_result.get('error', 'Unknown error')}")
         
