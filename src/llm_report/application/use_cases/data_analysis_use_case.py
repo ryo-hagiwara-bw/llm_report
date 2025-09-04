@@ -89,13 +89,13 @@ class DataAnalysisUseCase:
     
     async def _execute_cross_tabulation(self, data: pd.DataFrame, request: DataAnalysisRequest) -> CrossTabulationResult:
         """Execute cross tabulation analysis."""
-        if len(request.target_columns) != 2:
-            raise ValueError("Cross tabulation requires exactly two target columns")
+        if not request.group_by_columns or len(request.group_by_columns) != 2:
+            raise ValueError("Cross tabulation requires exactly two group_by_columns")
         
         return self.data_analyzer.create_cross_tabulation(
             data, 
-            request.target_columns[0], 
-            request.target_columns[1]
+            request.group_by_columns[0], 
+            request.group_by_columns[1]
         )
     
     async def _execute_correlation(self, data: pd.DataFrame, request: DataAnalysisRequest) -> CorrelationResult:

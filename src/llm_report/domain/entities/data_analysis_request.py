@@ -29,7 +29,7 @@ class DataAnalysisRequest:
     
     file_path: str
     analysis_type: AnalysisType
-    target_columns: List[str]
+    target_columns: Optional[List[str]] = None
     group_by_columns: Optional[List[str]] = None
     chart_type: Optional[ChartType] = None
     filters: Optional[Dict[str, Any]] = None
@@ -37,8 +37,8 @@ class DataAnalysisRequest:
     
     def __post_init__(self):
         """Validate the request after initialization."""
-        if not self.target_columns:
-            raise ValueError("target_columns cannot be empty")
+        if self.analysis_type == AnalysisType.BASIC_STATISTICS and (not self.target_columns or len(self.target_columns) != 1):
+            raise ValueError("Basic statistics requires exactly one target column")
         
         if self.analysis_type == AnalysisType.CROSS_TABULATION and not self.group_by_columns:
             raise ValueError("group_by_columns is required for cross tabulation")
