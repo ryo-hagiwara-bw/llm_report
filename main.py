@@ -22,17 +22,10 @@ from src.llm_report.application.services.dynamic_function_execution_service impo
 from src.llm_report.application.services.temp_save_service import TempSaveService
 from src.llm_report.application.services.cleanup_service import CleanupService
 from src.llm_report.application.services.latex_generation_service import LatexGenerationService
-from src.llm_report.application.services.business_report_generation_service import BusinessReportGenerationService
-from src.llm_report.application.services.business_latex_report_service import BusinessLatexReportService
-from src.llm_report.application.services.detailed_analysis_report_service import DetailedAnalysisReportService
-from src.llm_report.application.services.markdown_to_latex_service import MarkdownToLatexService
 from src.llm_report.application.services.unified_report_service import UnifiedReportService
 from src.llm_report.infrastructure.workflows.langgraph_workflow_engine import LangGraphWorkflowEngine, WorkflowConfig
 from src.llm_report.infrastructure.workflows.prompt_driven_workflow_engine import PromptDrivenWorkflowEngine
 from src.llm_report.infrastructure.workflows.report_generation_workflow_engine import ReportGenerationWorkflowEngine
-from src.llm_report.infrastructure.workflows.business_report_workflow_engine import BusinessReportWorkflowEngine
-from src.llm_report.infrastructure.workflows.business_latex_workflow_engine import BusinessLatexWorkflowEngine
-from src.llm_report.infrastructure.workflows.high_quality_report_workflow_engine import HighQualityReportWorkflowEngine
 from src.llm_report.infrastructure.workflows.unified_report_workflow_engine import UnifiedReportWorkflowEngine
 
 # Configure logging and suppress all warnings
@@ -78,18 +71,6 @@ class IntegratedLLMApp:
         self.temp_save_service = TempSaveService()
         self.cleanup_service = CleanupService()
         self.latex_service = LatexGenerationService()
-        self.business_report_service = BusinessReportGenerationService(
-            self.container.get_generate_content_use_case()
-        )
-        self.business_latex_service = BusinessLatexReportService(
-            self.container.get_generate_content_use_case()
-        )
-        self.detailed_analysis_service = DetailedAnalysisReportService(
-            self.container.get_generate_content_use_case()
-        )
-        self.markdown_to_latex_service = MarkdownToLatexService(
-            self.container.get_generate_content_use_case()
-        )
         self.unified_report_service = UnifiedReportService(
             self.container.get_generate_content_use_case()
         )
@@ -112,22 +93,6 @@ class IntegratedLLMApp:
         self.report_generation_workflow = ReportGenerationWorkflowEngine(
             self.latex_service,
             self.temp_save_service
-        )
-        
-        # Initialize business report generation workflow engine
-        self.business_report_workflow = BusinessReportWorkflowEngine(
-            self.business_report_service
-        )
-        
-        # Initialize business LaTeX report generation workflow engine
-        self.business_latex_workflow = BusinessLatexWorkflowEngine(
-            self.business_latex_service
-        )
-        
-        # Initialize high-quality report generation workflow engine
-        self.high_quality_report_workflow = HighQualityReportWorkflowEngine(
-            self.detailed_analysis_service,
-            self.markdown_to_latex_service
         )
         
         # Initialize unified report generation workflow engine
@@ -379,44 +344,7 @@ async def main():
         
         print()
         
-        # Test 6: Business Report Generation - 営業向けレポート生成
-        print("📊 Generating business-oriented report...")
-        
-        # 営業向けレポート生成ワークフローを実行
-        business_report_result = await app.business_report_workflow.execute_workflow(
-            combined_analysis_results, 
-            prompt_driven_prompt
-        )
-        
-        if business_report_result["success"]:
-            print(f"✅ Business report generated successfully!")
-            print(f"📄 Business report: {business_report_result.get('business_report', '')[:200]}...")
-            print(f"📋 Completed steps: {', '.join(business_report_result.get('completed_steps', []))}")
-        else:
-            print(f"❌ Business report generation failed: {business_report_result.get('error', 'Unknown error')}")
-        
-        print()
-        
-        # Test 7: Business LaTeX Report Generation - 営業向けLaTeXレポート生成
-        print("📊 Generating business-oriented LaTeX report...")
-        
-        # 営業向けLaTeXレポート生成ワークフローを実行
-        business_latex_result = await app.business_latex_workflow.execute_workflow(
-            combined_analysis_results, 
-            prompt_driven_prompt
-        )
-        
-        if business_latex_result["success"]:
-            print(f"✅ Business LaTeX report generated successfully!")
-            print(f"📄 LaTeX file: {business_latex_result.get('latex_file')}")
-            print(f"📄 PDF file: {business_latex_result.get('pdf_file')}")
-            print(f"📋 Completed steps: {', '.join(business_latex_result.get('completed_steps', []))}")
-        else:
-            print(f"❌ Business LaTeX report generation failed: {business_latex_result.get('error', 'Unknown error')}")
-        
-        print()
-        
-        # Test 8: Unified Report Generation - 統合レポート生成
+        # Test 6: Unified Report Generation - 統合レポート生成
         print("📊 Generating unified report (report.pdf)...")
         
         # 統合レポート生成ワークフローを実行

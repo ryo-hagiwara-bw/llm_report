@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.7.24)  4 SEP 2025 19:07
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.7.24)  4 SEP 2025 19:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -820,8 +820,8 @@ you left one out. Proceed, with fingers crossed.
 ! Missing $ inserted.
 <inserted text> 
                 $
-l.71 ...リア内居住者の平均滞在時間を分析することを求めています。そのため、'analyze_
-                                                  by_dimensions'関数を選択し、'aver...
+l.71 ...の万博会場における居住者の平均滞在時間を分析することを求めています。analyze_
+                                                  by_dimensions関数を使用することで、'a...
 I've inserted a begin-math/end-math symbol since I think
 you left one out. Proceed, with fingers crossed.
 
@@ -850,12 +850,32 @@ ex-text;!
 Missing character: There is no 数 (U+6570) in font [lmroman10-regular]:mapping=t
 ex-text;!
 Missing character: There is no を ("3092) in font cmmi10!
-Missing character: There is no 選 (U+9078) in font [lmroman10-regular]:mapping=t
+Missing character: There is no 使 (U+4F7F) in font [lmroman10-regular]:mapping=t
 ex-text;!
-Missing character: There is no 択 (U+629E) in font [lmroman10-regular]:mapping=t
+Missing character: There is no 用 (U+7528) in font [lmroman10-regular]:mapping=t
 ex-text;!
-Missing character: There is no し ("3057) in font cmmi10!
+Missing character: There is no す ("3059) in font cmmi10!
+Missing character: There is no る ("308B) in font cmmi10!
+Missing character: There is no こ ("3053) in font cmmi10!
+Missing character: There is no と ("3068) in font cmmi10!
+Missing character: There is no で ("3067) in font cmmi10!
 Missing character: There is no 、 (U+3001) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no （ (U+FF08) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 平 (U+5E73) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 均 (U+5747) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 滞 (U+6EDE) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 在 (U+5728) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 時 (U+6642) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 間 (U+9593) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no ） (U+FF09) in font [lmroman10-regular]:mapping=t
 ex-text;!
 Missing character: There is no を ("3092) in font cmmi10!
 Missing character: There is no タ ("30BF) in font cmmi10!
@@ -869,17 +889,6 @@ Missing character: There is no リ ("30EA) in font cmmi10!
 Missing character: There is no ッ ("30C3) in font cmmi10!
 Missing character: There is no ク ("30AF) in font cmmi10!
 Missing character: There is no と ("3068) in font cmmi10!
-Missing character: There is no し ("3057) in font cmmi10!
-Missing character: There is no て ("3066) in font cmmi10!
-Missing character: There is no 、 (U+3001) in font [lmroman10-regular]:mapping=t
-ex-text;!
-Missing character: There is no で ("3067) in font cmmi10!
-Missing character: There is no グ ("30B0) in font cmmi10!
-Missing character: There is no ル ("30EB) in font cmmi10!
-Missing character: There is no ー ("30FC) in font cmmi10!
-Missing character: There is no プ ("30D7) in font cmmi10!
-Missing character: There is no 化 (U+5316) in font [lmroman10-regular]:mapping=t
-ex-text;!
 Missing character: There is no し ("3057) in font cmmi10!
 Missing character: There is no 、 (U+3001) in font [lmroman10-regular]:mapping=t
 ex-text;!
@@ -905,14 +914,6 @@ Missing character: There is no 会 (U+4F1A) in font [lmroman10-regular]:mapping=
 ex-text;!
 Missing character: There is no 場 (U+5834) in font [lmroman10-regular]:mapping=t
 ex-text;!
-Missing character: There is no 、 (U+3001) in font [lmroman10-regular]:mapping=t
-ex-text;!
-Missing character: There is no を ("3092) in font cmmi10!
-Missing character: There is no エ ("30A8) in font cmmi10!
-Missing character: There is no リ ("30EA) in font cmmi10!
-Missing character: There is no ア ("30A2) in font cmmi10!
-Missing character: There is no 内 (U+5185) in font [lmroman10-regular]:mapping=t
-ex-text;!
 Missing character: There is no で ("3067) in font cmmi10!
 Missing character: There is no フ ("30D5) in font cmmi10!
 Missing character: There is no ィ ("30A3) in font cmmi10!
@@ -921,6 +922,38 @@ Missing character: There is no タ ("30BF) in font cmmi10!
 Missing character: There is no リ ("30EA) in font cmmi10!
 Missing character: There is no ン ("30F3) in font cmmi10!
 Missing character: There is no グ ("30B0) in font cmmi10!
+Missing character: There is no し ("3057) in font cmmi10!
+Missing character: There is no 、 (U+3001) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no さ ("3055) in font cmmi10!
+Missing character: There is no ら ("3089) in font cmmi10!
+Missing character: There is no に ("306B) in font cmmi10!
+Missing character: There is no （ (U+FF08) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no エ ("30A8) in font cmmi10!
+Missing character: There is no リ ("30EA) in font cmmi10!
+Missing character: There is no ア ("30A2) in font cmmi10!
+Missing character: There is no 内 (U+5185) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 居 (U+5C45) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 住 (U+4F4F) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 者 (U+8005) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no か ("304B) in font cmmi10!
+Missing character: There is no ど ("3069) in font cmmi10!
+Missing character: There is no う ("3046) in font cmmi10!
+Missing character: There is no か ("304B) in font cmmi10!
+Missing character: There is no ） (U+FF09) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no で ("3067) in font cmmi10!
+Missing character: There is no グ ("30B0) in font cmmi10!
+Missing character: There is no ル ("30EB) in font cmmi10!
+Missing character: There is no ー ("30FC) in font cmmi10!
+Missing character: There is no プ ("30D7) in font cmmi10!
+Missing character: There is no 化 (U+5316) in font [lmroman10-regular]:mapping=t
+ex-text;!
 Missing character: There is no す ("3059) in font cmmi10!
 Missing character: There is no る ("308B) in font cmmi10!
 Missing character: There is no こ ("3053) in font cmmi10!
@@ -928,47 +961,88 @@ Missing character: There is no と ("3068) in font cmmi10!
 Missing character: There is no で ("3067) in font cmmi10!
 Missing character: There is no 、 (U+3001) in font [lmroman10-regular]:mapping=t
 ex-text;!
-Missing character: There is no プ ("30D7) in font cmmi10!
-Missing character: There is no ロ ("30ED) in font cmmi10!
-Missing character: There is no ン ("30F3) in font cmmi10!
-Missing character: There is no プ ("30D7) in font cmmi10!
-Missing character: There is no ト ("30C8) in font cmmi10!
-Missing character: There is no の ("306E) in font cmmi10!
-Missing character: There is no 要 (U+8981) in font [lmroman10-regular]:mapping=t
+Missing character: There is no 居 (U+5C45) in font [lmroman10-regular]:mapping=t
 ex-text;!
-Missing character: There is no 求 (U+6C42) in font [lmroman10-regular]:mapping=t
+Missing character: There is no 住 (U+4F4F) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 者 (U+8005) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no の ("306E) in font cmmi10!
+Missing character: There is no 属 (U+5C5E) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 性 (U+6027) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no ご ("3054) in font cmmi10!
+Missing character: There is no と ("3068) in font cmmi10!
+Missing character: There is no の ("306E) in font cmmi10!
+Missing character: There is no 平 (U+5E73) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 均 (U+5747) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 滞 (U+6EDE) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 在 (U+5728) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 時 (U+6642) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 間 (U+9593) in font [lmroman10-regular]:mapping=t
 ex-text;!
 Missing character: There is no を ("3092) in font cmmi10!
-Missing character: There is no 満 (U+6E80) in font [lmroman10-regular]:mapping=t
+Missing character: There is no 詳 (U+8A73) in font [lmroman10-regular]:mapping=t
 ex-text;!
-Missing character: There is no た ("305F) in font cmmi10!
-Missing character: There is no す ("3059) in font cmmi10!
+Missing character: There is no 細 (U+7D30) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no に ("306B) in font cmmi10!
 Missing character: There is no 分 (U+5206) in font [lmroman10-regular]:mapping=t
 ex-text;!
 Missing character: There is no 析 (U+6790) in font [lmroman10-regular]:mapping=t
 ex-text;!
-Missing character: There is no が ("304C) in font cmmi10!
-Missing character: There is no 可 (U+53EF) in font [lmroman10-regular]:mapping=t
-ex-text;!
-Missing character: There is no 能 (U+80FD) in font [lmroman10-regular]:mapping=t
-ex-text;!
-Missing character: There is no と ("3068) in font cmmi10!
-Missing character: There is no 考 (U+8003) in font [lmroman10-regular]:mapping=t
-ex-text;!
-Missing character: There is no え ("3048) in font cmmi10!
-Missing character: There is no ら ("3089) in font cmmi10!
-Missing character: There is no れ ("308C) in font cmmi10!
+Missing character: There is no で ("3067) in font cmmi10!
+Missing character: There is no き ("304D) in font cmmi10!
 Missing character: There is no ま ("307E) in font cmmi10!
 Missing character: There is no す ("3059) in font cmmi10!
 Missing character: There is no 。 (U+3002) in font [lmroman10-regular]:mapping=t
 ex-text;!
+Missing character: There is no 分 (U+5206) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 析 (U+6790) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no の ("306E) in font cmmi10!
+Missing character: There is no 種 (U+7A2E) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 類 (U+985E) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no と ("3068) in font cmmi10!
+Missing character: There is no し ("3057) in font cmmi10!
+Missing character: There is no て ("3066) in font cmmi10!
+Missing character: There is no は ("306F) in font cmmi10!
+Missing character: There is no 平 (U+5E73) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 均 (U+5747) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 値 (U+5024) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no を ("3092) in font cmmi10!
+Missing character: There is no 求 (U+6C42) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no め ("3081) in font cmmi10!
+Missing character: There is no る ("308B) in font cmmi10!
+Missing character: There is no が ("304C) in font cmmi10!
+Missing character: There is no 適 (U+9069) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no 切 (U+5207) in font [lmroman10-regular]:mapping=t
+ex-text;!
+Missing character: There is no で ("3067) in font cmmi10!
+Missing character: There is no す ("3059) in font cmmi10!
+Missing character: There is no 。 (U+3002) in font [lmroman10-regular]:mapping=t
+ex-text;!
 
-Overfull \hbox (383.84886pt too wide) in paragraph at lines 71--72
-\TU/HiraginoKakuGothicProN(0)/m/n/10.95 め て い ま す。|  そ の た め、| \TU/lmr/m/n/10.9
-5 ’analyze$[]\OML/cmm/m/it/10.95 y[]imensions[][][][][][][]average[]aily[]isiti
-ng[]econds[][][]area[];[] home[]rea[];[] work[]rea[];[] day[]ype[];[] gender[];
-[] age[][][][]period[][][][][][][][][][]area[][][][][][][][][]home[]rea[][][][]
-[][][][][][][][][][]
+Overfull \hbox (363.99147pt too wide) in paragraph at lines 71--72
+\TU/HiraginoKakuGothicProN(0)/m/n/10.95 め て い ま す。| \TU/lmr/m/n/10.95 analyze$[
+]\OML/cmm/m/it/10.95 y[]imensions[][][][][][]average[]aily[]isiting[]econds[][]
+[][][][][][][][][]period[][][][][][][][][][]area[][][][][][][][][]home[]rea[][]
+[][][][][];[] work[]rea[];[] day[]ype[];[] gender[];[] age[][][][][][][][][][][
+][][][][][][][][][][][][][][][][][]mean[][][][]
  []
 
 
@@ -977,23 +1051,30 @@ Underfull \hbox (badness 10000) in paragraph at lines 71--72
  []
 
 
-Overfull \hbox (18.01012pt too wide) in paragraph at lines 82--121
-\TU/lmr/m/n/10.95 insights=[”work_area ’ \TU/HiraginoKakuGothicProN(0)/m/n/10.9
-5 エ リ ア 内\TU/lmr/m/n/10.95 ’ represents 33.3DimensionAnalysisResult(dimension=’
-work_area’,
- []
-
-
-Overfull \hbox (48.6712pt too wide) in paragraph at lines 82--121
-\TU/lmr/m/n/10.95 represents 100.0’mean’: 65437.86658666667, ’std’: 63226.79973
-116051, ’min’: 25121.45196, ’2529002.69988,
+Overfull \hbox (7.53426pt too wide) in paragraph at lines 82--159
+\TU/lmr/m/n/10.95 20146.599713280764, ’min’: 9392.98, ’2513651.053950000001, ’7
+5insights=[], recommendations=[]) 
  []
 
 
 
 [2]
 
-[3] 
+[3]
+! Missing } inserted.
+<inserted text> 
+                }
+l.159 \end{itemize}
+                   
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+
+
+[4] 
 enddocument/afterlastpage (AED): lastpage setting LastPage.
 (./analysis_report.aux)
  ***********
@@ -1013,16 +1094,16 @@ Package rerunfilecheck Info: Checksums for `analysis_report.out':
 (rerunfilecheck)             Before: <no file>
 (rerunfilecheck)             After:  E63D05041075536E0DC6921528AD5194;926.
 
-Package lastpage Warning: Rerun to get the references right on input line 124.
+Package lastpage Warning: Rerun to get the references right on input line 162.
 
  ) 
 Here is how much of TeX's memory you used:
- 16106 strings out of 473832
- 328572 string characters out of 5729481
- 771922 words of memory out of 5000000
- 38965 multiletter control sequences out of 15000+600000
+ 16094 strings out of 473832
+ 327616 string characters out of 5729481
+ 776922 words of memory out of 5000000
+ 38953 multiletter control sequences out of 15000+600000
  566116 words of font info for 84 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 74i,6n,92p,403b,430s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 74i,6n,92p,425b,452s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on analysis_report.pdf (3 pages).
+Output written on analysis_report.pdf (4 pages).
