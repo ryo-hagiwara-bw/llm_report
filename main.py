@@ -13,8 +13,8 @@ from src.llm_report.infrastructure.config.dependency_container import Dependency
 from src.llm_report.application.use_cases.generate_content_use_case import GenerateContentUseCase
 from src.llm_report.application.use_cases.function_calling_use_case import FunctionCallingUseCase, FunctionCallingRequest
 from src.llm_report.application.use_cases.data_analysis_use_case import DataAnalysisUseCase
-from src.llm_report.infrastructure.services.data_loader_service import DataLoaderService
-from src.llm_report.infrastructure.services.data_analysis_service import DataAnalysisService
+from src.llm_report.application.services.data_loader_service import DataLoaderService
+from src.llm_report.application.services.data_analysis_service import DataAnalysisService
 from src.llm_report.infrastructure.workflows.clean_workflow_engine import CleanWorkflowEngine
 
 # Configure logging and suppress all warnings

@@ -7,8 +7,8 @@ import pandas as pd
 
 from ...domain.entities.data_analysis_request import DataAnalysisRequest, AnalysisType, ChartType
 from ...domain.entities.data_analysis_response import DataAnalysisResponse, StatisticalSummary, CrossTabulationResult, CorrelationResult, VisualizationResult
-from ...infrastructure.services.data_loader_service import DataLoaderService
-from ...infrastructure.services.data_analysis_service import DataAnalysisService
+from ...application.services.data_loader_service import DataLoaderService
+from ...application.services.data_analysis_service import DataAnalysisService
 
 logger = logging.getLogger(__name__)
 
