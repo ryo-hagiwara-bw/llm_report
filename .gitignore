@@ -11,3 +11,6 @@ wheels/
 
 # Dataset folder
 dataset/
+
+# Output folder (generated files)
+output/
