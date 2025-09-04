@@ -32,10 +32,16 @@ class FunctionResult:
 @dataclass
 class FunctionCallingRequest:
     """Request for function calling generation."""
-    prompt: Prompt
-    model: ModelConfig
-    functions: List[Dict[str, Any]]
+    prompt: str
+    model: ModelConfig = None
+    functions: List[Dict[str, Any]] = None
     max_iterations: int = 5
+    
+    def __post_init__(self):
+        if self.model is None:
+            self.model = ModelConfig()
+        if self.functions is None:
+            self.functions = []
 
 
 @dataclass
@@ -86,23 +92,24 @@ class FunctionCallingUseCase:
             Function calling response
         """
         try:
-            logger.info(f"Starting function calling for prompt: {request.prompt.content[:50]}...")
+            logger.info(f"Starting function calling for prompt: {request.prompt[:50]}...")
             
             # Convert functions to Vertex AI format
             vertex_functions = self._convert_functions_to_vertex_format(request.functions)
             
+            # Create prompt object
+            prompt_obj = Prompt(content=request.prompt)
+            
             # Create generation request with functions
             generation_request = GenerationRequest(
-                prompt=request.prompt,
+                prompt=prompt_obj,
                 model=request.model
             )
             
             # Generate content with function calling
             try:
-                response = await self.llm_repository.generate_content_with_functions(
-                    generation_request,
-                    functions=vertex_functions
-                )
+                # Use the regular generate_content method
+                response = await self.llm_repository.generate_content(generation_request)
             except Exception as e:
                 # If there's an error, it might be because of function calls
                 # Let's try to extract function calls from the error context

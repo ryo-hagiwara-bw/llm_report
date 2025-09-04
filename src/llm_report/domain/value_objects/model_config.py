@@ -7,7 +7,7 @@ from typing import Optional
 class ModelConfig(BaseModel):
     """Model configuration value object."""
     
-    name: str
+    name: str = "gemini-2.0-flash-exp"
     temperature: float = 0.7
     max_tokens: Optional[int] = None
     

@@ -162,6 +162,12 @@ class DataAnalysisService:
             plt.xticks(rotation=45)
             plt.tight_layout()
             
+            # Save the chart
+            import os
+            os.makedirs("output", exist_ok=True)
+            file_path = f"output/bar_chart_{x_col}_{y_col}.png"
+            fig.savefig(file_path, dpi=300, bbox_inches='tight')
+            
             return VisualizationResult(
                 chart_type="bar_chart",
                 figure=fig,
@@ -170,7 +176,8 @@ class DataAnalysisService:
                     "x_column": x_col,
                     "y_column": y_col,
                     "data_points": len(data)
-                }
+                },
+                file_path=file_path
             )
             
         except Exception as e:
@@ -198,6 +205,12 @@ class DataAnalysisService:
             ax.set_ylabel("Frequency")
             plt.tight_layout()
             
+            # Save the chart
+            import os
+            os.makedirs("output", exist_ok=True)
+            file_path = f"output/histogram_{column}.png"
+            fig.savefig(file_path, dpi=300, bbox_inches='tight')
+            
             return VisualizationResult(
                 chart_type="histogram",
                 figure=fig,
@@ -207,11 +220,56 @@ class DataAnalysisService:
                     "data_points": len(data[column].dropna()),
                     "mean": float(data[column].mean()),
                     "std": float(data[column].std())
-                }
+                },
+                file_path=file_path
             )
             
         except Exception as e:
             logger.error(f"Failed to create histogram: {e}")
+            raise
+    
+    def create_scatter_plot(self, data: pd.DataFrame, x_col: str, y_col: str, title: str = "Scatter Plot") -> VisualizationResult:
+        """Create a scatter plot.
+        
+        Args:
+            data: DataFrame containing the data
+            x_col: Name of the x-axis column
+            y_col: Name of the y-axis column
+            title: Chart title
+            
+        Returns:
+            VisualizationResult object with the chart
+        """
+        try:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            
+            # Create scatter plot
+            ax.scatter(data[x_col], data[y_col], alpha=0.6)
+            ax.set_title(title)
+            ax.set_xlabel(x_col)
+            ax.set_ylabel(y_col)
+            plt.tight_layout()
+            
+            # Save the chart
+            import os
+            os.makedirs("output", exist_ok=True)
+            file_path = f"output/scatter_plot_{x_col}_{y_col}.png"
+            fig.savefig(file_path, dpi=300, bbox_inches='tight')
+            
+            return VisualizationResult(
+                chart_type="scatter_plot",
+                figure=fig,
+                description=f"Scatter plot showing {y_col} vs {x_col}",
+                data_summary={
+                    "x_column": x_col,
+                    "y_column": y_col,
+                    "data_points": len(data)
+                },
+                file_path=file_path
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to create scatter plot: {e}")
             raise
     
     def create_heatmap(self, data: pd.DataFrame, title: str = "Heatmap") -> VisualizationResult:

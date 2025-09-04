@@ -46,6 +46,7 @@ class VisualizationResult:
     figure: Optional[plt.Figure] = None
     description: Optional[str] = None
     data_summary: Optional[Dict[str, Any]] = None
+    file_path: Optional[str] = None
 
 
 @dataclass
